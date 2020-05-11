@@ -25,14 +25,14 @@ _main_scatterload
 
 ## gnu arm ld 之 Linker Script設定  
 SECTION{  
-  .text 0x0000000:             //.text區塊放到 VMA=0x00000000  
-  {  
-    *(.text)  
-  }  
-  .data 0x10000000: AT(ADDR(.text)+SIZEOF(.text))  //.data區塊放到 VMA=0x10000000, LMA會接續放到.text後面  
-  {  
-    *(.data)  
-  }  
+    .text 0x0000000:             //.text區塊放到 VMA=0x00000000  
+    {  
+        *(.text)  
+    }  
+    .data 0x10000000: AT(ADDR(.text)+SIZEOF(.text))  //.data區塊放到 VMA=0x10000000, LMA會接續放到.text後面  
+    {  
+        *(.data)  
+    }  
 }  
 
 ## Scatter loading Example
