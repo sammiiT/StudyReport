@@ -15,19 +15,27 @@
 * 程式開始執行時,會將對應的RW(initialized glabol or static global variable)從LMA搬移到實際運作的VMA區塊,此搬移動作稱為Scatter Loading。用armlink時,搬移的動作會自動加在main函式的開頭; 參照; 用gnu arm ld 必須加上搬移.data 到VMA的描述。
 
 ## ArmLink鏈結
-* armlink鏈結object檔案時,
+* armlink鏈結object檔案時, 會自動在main中呼叫__scatterload, 其中內容就是在搬移RW區塊到對應的VMA
+ __main
+ _main_stk
+ 0x080001ac: f8dfd00c .... LDR sp,__lit__00000000 ; [0x80001bc] = 0x20000400
+ .ARM.Collect$$$$00000004
+ _main_scatterload
+ 0x080001b0: f000f818 .... BL __scatterload ; 0x80001e4
 
-## ld 之 Linker Script設定
-SECTION{  
+## gnu arm ld 之 Linker Script設定
+ SECTION{  
+   .text 0x0000000:             //.text區塊放到 VMA=0x00000000
+   {
+     *(.text)  
+   }
+   .data 0x10000000: AT(ADDR(.text)+SIZEOF(.text))  //.data區塊放到 VMA=0x10000000, LMA會接續放到.text後面
+   {
+     *(.data)
+   }
+ }
 
-  .text 0x0000000:{
-    *(.text)  
-  }
-  .data 0x10000000: AT(ADDR(.text)+SIZEOF(.text)){
-    *(.data)
-  }
-}
 
 
-
-## Example
+## Scatter loading Example
+* 參考ScatterLoading_C.md
