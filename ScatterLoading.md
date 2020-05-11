@@ -36,4 +36,4 @@ _main_scatterload
 }  
 
 ## Scatter loading Example
-* 參考ScatterLoading_C.md
+* 參考ScatterLoadingImplement.md
