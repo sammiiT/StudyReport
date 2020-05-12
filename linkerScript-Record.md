@@ -1,11 +1,53 @@
-# Linker Script Record
+# Linker Script 紀錄
+* Linker的作用就是把輸入的object檔的各個區段,整合並輸出到特定的區段(section)
 * 透過範例來了解Linker Script撰寫
 
-## Example_1
+## Object File
+* .obj檔案, 經編譯器編譯後的檔案
+* 經編譯後的檔案(obj)基本上分為三個區段:程式區段, 經初始化的全域變量, 未經初始化的全域變量
+* 每一個obj檔案的每一個區段,會經由linker script放置到其所描述的區域, 最後輸出bin檔,或elf/axf執行檔
 
-## Example_2
+## Symbol
+* 每一個object檔案都有一個symbol列表, 稱為symbol table. 這些symbol有些是defined, 有些是undefined。 
+* Defined symbol都有一個固定的地址(存放symbol的地址),defined symbol可以是一個函式,一個global variable, 或一個static global。
+* Undefined symbol是在object檔案中以extern描述的外部定義變量; 如.c檔案中的 extern int a; extern void foo(); 這些參數是必須經由linker鏈結才能參考。
+* 可以利用binutil的nm指令查詢檔案中的所有symbol.
 
-## Example_3: LMA,VMA
+## Location Counter
+* .是location counter, 用來表示symbol的位址值
+## Orphan Section
+
+## Example_1: SECTION , MEMORY 指令
+* MEMORY: 描述target device的記憶體區塊位址,大小; 可以用此指令來劃分記憶體的region,告訴linker哪一塊可以存放資料,程式或變量。可以將SECTION中的各個區塊指派給MEMORY中的region。  
+        MEMORY{  
+                FLASH(rx):ORIGIN=0x00000000,LENGTH=128K  //FLASH region從0x00000000位址開始, 大小為128k, 屬性為讀和執行  
+                RAM(rwx):ORIGIN=0x20000000,LENGTH=32K   //RAM region從0x20000000位址開始,大小為32K,屬性為讀寫和執行  
+        }        
+* SECTION:此指令告訴linker如何組織各個輸入的section, 並將其輸出; 同時也定義各個output section在memory中的位址。  
+        SECTIONS{  
+            .text:{  
+                *(.text)        //各個 obj檔案的.text區段放到.text區段   
+                *(.text.*)      //各個obj檔案的.text.*區段放到.text區段          
+                *(.rodata)  
+                _sromdev=.;     //_sromdev 符號(symbol)    
+                _eromdev=.;
+                _sidata=.;
+            }>FLASH             //.text區段會放到MEMORY的FLASH region
+            .data:AT(_sidata){      //.data區段的LMA會放到_sidata起始的位址
+                    _sdata=.;
+                    *(.data)
+                    *(.data*)
+                    _edata=.;  
+             }>RAM              //.data會放到MEMORY的RAM region
+             .bss:{  
+                    _sbss=.;  
+                    *(.bss)  
+                    _ebss=.;  
+             }>RAM              //.bss會放到MEMORY的RAM region,接續在.data的後面
+             _estack = ORIGIN(RAM) + LENGTH(RAM);
+        }
+
+## Example_2: LMA,VMA
 * 以下assembler, 編譯gcc -o xx.o -c xxx.S
 ```as
 .section .text
