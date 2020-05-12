@@ -7,6 +7,9 @@
 ## VMA (virtual memory address)
 * 運行地址: 程式執行時的實際位址, 當系統bootup時, Flash中的一部分資料會被搬移到實際的執行位址
 
+### LMA=VMA or LMA!=VMA
+* 一般情況下是LMA=VMA, 只有少數情況是不相等的: CPU從ROM(如NorFlash)中讀取代碼速度, 要遠遠小於RAM(如SDRAM),所以在開始的執行時先將此部份程序reload(重載),也就是從ROM的地址(LMA)重新拷貝到SDRAM(也就是VMA),然後從那裡運行
+
 ## (RO + RW + ZI) & (.text + .data + .bss) 
 * arm的編譯器: RO=(程式和const data) ; RW=(初始化的global和global static variable) ; ZI=(未經初始化的global及global static), 其中ZI會在程式執行main函式之前被設定為0
 * gnu arm編譯器: .text=程式和const data ; .data=初始化的global和global static variable ; .bss=未經初始化的global及global static, 此區域會初始化為0
@@ -34,6 +37,6 @@ _main_scatterload
         *(.data)  
     }  
 }  
-
+* 參考linkerScript-Record.md
 ## Scatter loading Example
 * 參考ScatterLoadingImplement.md
