@@ -38,12 +38,12 @@ _symbol_in_data:
     *  
     0003000 9090 9090  
     
-最開始01b8應該就是mov $1, $eax的instruction code。而0x3000位置的90909090顯然就是我們定義在數據段>的character了。因為linker script中没有用AT指令專門為兩個段指定lma，所以其lma与vma相等，两个段相差了0x3000 bytes的長度。.text段之前没有其他段了，所以最终的bin文件中一開始就是.text段的内容，雖然只有2個character，但仍然要过0x3000 bytes才是.data段,中間那些未知數就
+最開始01b8應該就是mov $1, $eax的instruction code。而0x3000位置的90909090顯然就是我們定義在數據段的character了。因為linker script中沒有用AT指令專門為兩個段指定LMA，所以其LMA與VMA相等，兩區段相差了0x3000 bytes的長度。.text段之前沒有其他區段了，所以最終的bin文件中一開始就是.text段的內容，雖然只有2個character，但仍然要跨過0x3000 bytes才是.data段,中間那些未知數就
 填0。  
 
-因為我們知道0x8000已經是Ram了，燒錄全域變數區域到一斷電内容就消失的Ram中？ 並且,Flash(Rom)和Ram之間相隔的0x3000 bytes不一定就對應實際的儲存區域。  
+因為我們知道0x8000已經是Ram了，燒錄全域變數區域到一斷電, 其容就消失的Ram中？ 並且,Flash(Rom)和Ram之間相隔的0x3000 bytes不一定就對應實際的儲存區域。  
   
-更新Linker Script:  
+更新Linker Script:下面的ld script在定義.data段時增加了AT指令來描述其LMA，這樣表示.data區段的LMA緊接在.text區段的後面, 但.data的VMA還是落在 0x8000位址上: 
     SECTIONS{  
        .text 0x5000:{  
           *(.text)  
