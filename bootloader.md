@@ -32,11 +32,13 @@ void execute_user_app(void)
 ## Bootloader Remap  
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/bootloader_remap.png)  
 -----  
-* cortex-m0 cpu不支援VTOR, 所以必須用memory remap功能  
-* 將user app vector table先拷貝一分到, SRAM區域  
-* 設定SYSCFG register(SYSCFG_CFGR1)的bit[0]和bit[1]
+* cortex-m0 cpu不支援VTOR, 所以必須用memory remap功能。  
+* 將user app vector table先拷貝一分到SRAM 的起始位址區域。   
+* 設定SYSCFG register(SYSCFG_CFGR1)的bit[0]=1和bit[1]=1,將SRAM映射到0x00000000, vector table會映射到0x0。  
+* 執行跳躍到user app程式:  
+```c
 
-
+```
 
 
 
