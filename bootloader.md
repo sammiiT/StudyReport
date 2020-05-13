@@ -29,10 +29,17 @@ void execute_user_app(void)
   boot_jump(USER_APP_ADDRESS);      //重新設定stack pointer和program counter
 }
 ```
-
 ## Bootloader Remap  
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/bootloader_remap.png)  
+-----  
+* cortex-m0 cpu不支援VTOR, 所以必須用memory remap功能  
+* 將user app vector table先拷貝一分到, SRAM區域  
+* 設定SYSCFG register(SYSCFG_CFGR1)的bit[0]和bit[1]
 
-## 簡易燒錄實作
+
+
+
+
 
 ## BootLoader Feature  
 * Configurable application Space  
