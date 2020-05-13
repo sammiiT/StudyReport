@@ -13,7 +13,7 @@
 Note: thumb模式下,PC代的數值的bit[0]設為1
 
 ## Bootloader VTOR 
-![](https://github.com/sammiiT/Study-Report/blob/master/ScatterLoading-bootloader_VTOR.png)  
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/bootloader-VTOR.png)  
 -----  
 * bootloader將下載的user app搬移至藍色區塊; 需有flash controller用於燒錄user app用。  
 * 執行跳躍到user app的位址, 並執行; sample code如下:
