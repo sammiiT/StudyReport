@@ -12,6 +12,34 @@
 
 Note: thumb模式下,PC代的數值的bit[0]設為1
 
-## Bootloader Remap
-
 ## Bootloader VTOR 
+![](https://github.com/sammiiT/Study-Report/blob/master/ScatterLoading-bootloader_VTOR.png)  
+-----  
+* bootloader將下載的user app搬移至藍色區塊; 需有flash controller用於燒錄user app用。  
+* 執行跳躍到user app的位址, 並執行; sample code如下:
+```c
+#define USER_APP_ADDRESS 0x20000000
+__asm void boot_jump(uint32_t address){
+  LDR SP, [R0]      //load new stack pointer address; vector table 的第一個記憶體位址(stack bottom)
+  LDR PC, [R0,#4]   //load new program counter address; vector table中的第二個記憶體位址(Reset_Handler)
+}
+void execute_user_app(void) 
+{
+  SCB->VTOR = APPLICATION_ADDRESS;  //將user app的位址指派給vector table offset register  
+  boot_jump(USER_APP_ADDRESS);      //重新設定stack pointer和program counter
+}
+```
+
+## Bootloader Remap  
+
+## 簡易燒錄實作
+
+## BootLoader Feature  
+* Configurable application Space  
+* Flash erase  
+* Flash Programming  
+* checksum verification  
+* flash protection check, write protection enable/disable  
+* extended error handling, fail-safe design  
+
+
