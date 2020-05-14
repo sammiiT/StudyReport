@@ -1,6 +1,16 @@
 # ARM CortexM Interrupt Chap7.8.9
 
-p172 , p59
+## Exception Type:
+*  type 1~15的 excetpion 和 type 16~255的external interrupt  
+*  沒有type 0的exception  
+*  excetpion發生時會將pending state register舉起來,直到對應的handler執行為止; 即使 exception被mask,其pending state還是會舉起。 傳統的ARM processor是hold住IRQ或FIQ一直到執行完成, 現在用pending state register來取代。 REQUEST是外部訊號,hold住才會執行interrupt handler;若沒有hold住,就不會執行???
+
+## Vector Table:  
+*  vector table列表所有interrupt/exception handler的位址,和initial stack top; 通常是放在VMA的0x00000000位址。  
+*  vector table可以relocate到其他位址,再透過VTOR暫存器重新指向。可利用此機制設計bootloader。  
+
+## Interrupt Input & Pending behavior
+
 ## Interrupt/Exception Sequences:  
 * **Stacking**:   
     * 將r0-r3,r12,lr,pc,psr, 8個暫存器堆疊至stack; 此stack是main stack 或 process stack, 由當下Control Register決定; CONTROL[1]。  
@@ -17,15 +27,16 @@ p172 , p59
     * LR更新:link register會被更新為；  
         * 0xFFFFFFF1: 表示return時回到handler mode。  
         * 0xFFFFFFF9: 表示return時回到thread mode用main stack。  
-        * 0xFFFFFFFD: 表示return時回到thread mode,用process stack。
+        * 0xFFFFFFFD: 表示return時回到thread mode,用process stack。  
+    * 發生interrupt時, LR會儲存EXC_RETURN的數值; 而Function Call時,LR會記錄的caller下一個執行指令,返回時用到。          
 
 ## Interrupt/Exception結束:
 * Unstacking: MSP或PSP的內容pop回CPU register  
 * NVIC register update:  
     
-note: interrupt/exception 觸發,結束; 上述動作都是自動完成, 使用者不須自己寫程式完成。
-note: cortex-m3 rev.2之前的版本的stack frame是4byte aligned, rev.2之後的版本是8 bytes aligned; 可經由NVIC暫存器的STKALIGN bit來設定。
-note: Exception不支援重入(reentrant)。
+note: interrupt/exception 觸發,結束; 上述動作都是自動完成, 使用者不須自己寫程式完成。  
+note: cortex-m3 rev.2之前的版本的stack frame是4byte aligned, rev.2之後的版本是8 bytes aligned; 可經由NVIC暫存器的STKALIGN bit來設定。  
+note: Exception不支援重入(reentrant)。  
 
 # Tail-chaining Interrupt:  
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/Tail-Chaining.PNG)
