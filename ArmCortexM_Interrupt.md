@@ -27,14 +27,14 @@ note: interrupt/exception 觸發,結束; 上述動作都是自動完成, 使用�
 note: cortex-m3 rev.2之前的版本的stack frame是4byte aligned, rev.2之後的版本是8 bytes aligned; 可經由NVIC暫存器的STKALIGN bit來設定。
 note: Exception不支援重入(reentrant)。
 
-
 # Tail-chaining Interrupt:  
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/Tail-Chaining.PNG)
 * 當processor在handler mode時, 發生了相同權限或較低權限的exception, 這些exception會進入pending state(chap7)一直到當下的interrupt handler完成。   
 * handler結束,會直接執行pending的exception, 不會執行stack/unstack的動作, 因為與前一個結束的handler處於同一個狀態。
 * 可改善interrupt latency,因為少了一次stack的push/pop。
 
-
-# Late Arrival:
+# Late Arrival: 後到先執行  
+*  當系統因interrupt/exception而執行stacking動作時, 又發生了權限更高的exception, 會先將stacking的動作完成(low and ?high?), 接著執行高權限的handler。
 
 
 
