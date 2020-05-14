@@ -1,7 +1,7 @@
 # ARM CortexM Interrupt Chap7.8.9
 
 ## Exception Type:
-*  type 1~15的 excetpion 和 type 16~255的external interrupt  
+*  type 1-15的 excetpion 和 type 16-255的external interrupt  
 *  沒有type 0的exception  
 *  excetpion發生時會將pending state register舉起來,直到對應的handler執行為止; 即使 exception被mask,其pending state還是會舉起。 傳統的ARM processor是hold住IRQ或FIQ一直到執行完成, 現在用pending state register來取代。 REQUEST是外部訊號,hold住才會執行interrupt handler;若沒有hold住,就不會執行???
 
@@ -9,7 +9,9 @@
 *  vector table列表所有interrupt/exception handler的位址,和initial stack top; 通常是放在VMA的0x00000000位址。  
 *  vector table可以relocate到其他位址,再透過VTOR暫存器重新指向。可利用此機制設計bootloader。  
 
-## Interrupt Input & Pending behavior
+## Interrupt Input & Pending behavior  
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptPendingBehavior.PNG)  
+*  test
 
 ## Interrupt/Exception Sequences:  
 * **Stacking**:   
@@ -38,13 +40,13 @@ note: interrupt/exception 觸發,結束; 上述動作都是自動完成, 使用�
 note: cortex-m3 rev.2之前的版本的stack frame是4byte aligned, rev.2之後的版本是8 bytes aligned; 可經由NVIC暫存器的STKALIGN bit來設定。  
 note: Exception不支援重入(reentrant)。  
 
-# Tail-chaining Interrupt:  
+## Tail-chaining Interrupt:  
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/Tail-Chaining.PNG)
 * 當processor在handler mode時, 發生了相同權限或較低權限的exception, 這些exception會進入pending state(chap7)一直到當下的interrupt handler完成。   
 * handler結束,會直接執行pending的exception, 不會執行stack/unstack的動作, 因為與前一個結束的handler處於同一個狀態。
 * 可改善interrupt latency,因為少了一次stack的push/pop。
 
-# Late Arrival: 後到先執行  
+## Late Arrival: 後到先執行  
 *  當系統因interrupt/exception而執行stacking動作時, 又發生了權限更高的exception, 會先將stacking的動作完成(low and ?high?), 接著執行高權限的handler。
 
 
