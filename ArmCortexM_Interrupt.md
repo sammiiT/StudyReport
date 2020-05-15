@@ -18,12 +18,18 @@
 *  pending state可用來做為software interrupt的開關, 設定pending state = 1則會發出對應的中斷。  
 
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptPendingBehavior2.png)  
-![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptPendingBehavior3.png)
+*  interrupt active bit:執行handler mode時會自動舉起, interrupt return時會自動清除。如左圖。  
+*  若interrupt request維持不清除, 當handler mode結束時會pending state會再舉起, 則interrupt handler會再執行一次。如右圖。  
+
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptPendingBehavior3.png)  
+*  在pending state舉起時, 若interrupt request連續觸發, handler只會執行一次。左圖。  
+*  在執行handler mode時, 若相同的interrupt request再次觸發, 此次觸發會讓pending state再次舉起, 待handler mode執行結束時會在進入執行(Tail chainning interrupt)。 如右圖。
 
 ### 結論
-*  request 控制 pending status  
-*  pending status 控制 cpu是否進入handler mode  
-
+*  request 控制 pending status。  
+*  pending status 控制cpu是否進入handler mode; pending status可以由使用者來控制。 
+*  pending status 同時也控制active status。  
+*  active status與handler的動作時間是一樣的。
 
 ## Interrupt/Exception Sequences:  
 * **Stacking**:   
