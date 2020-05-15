@@ -11,7 +11,19 @@
 
 ## Interrupt Input & Pending behavior  
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptPendingBehavior.PNG)  
-*  test
+*  當interrupt發生時,會先進入pending state,待cpu處理此interrupt request, 當cpu進入handller mode處理此中斷,此pending state會被自動清除,如左圖。processor進入handler模式, 則pending state 被清除。  
+*  如果cpu一直不執行此中斷要求, pending state會一直維持在waiting 狀態。  
+*  若cpu尚未進入handler模式, pending state就被手動清除, 則此interrupt request不會執行對應的響應。如右圖。  
+*  即使interrupt被mask, interrupt request發生Pending state還是會舉起來。這個時候pending state需要手動清除。  
+*  pending state可用來做為software interrupt的開關, 設定pending state = 1則會發出對應的中斷。  
+
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptPendingBehavior2.png)  
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptPendingBehavior3.png)
+
+### 結論
+*  request 控制 pending status  
+*  pending status 控制 cpu是否進入handler mode  
+
 
 ## Interrupt/Exception Sequences:  
 * **Stacking**:   
