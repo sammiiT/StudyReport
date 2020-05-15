@@ -65,10 +65,9 @@ note: Exception不支援重入(reentrant)。
 * 可改善interrupt latency,因為少了一次stack的push/pop。
 
 ## Late Arrival: 後到先執行  
-*  當系統因interrupt/exception而執行stacking動作時, 又發生了權限更高的exception, 會先將stacking的動作完成(low and ?high?), 接著執行高權限的handler。
+*  當系統因interrupt/exception而執行stacking動作時, 又發生了權限更高的exception, 會先將stacking的動作完成(low and ?high?), 接著執行高權限的handler。  
 
-
-
+## PendSV
 
 
 
