@@ -27,7 +27,8 @@ _main_scatterload
 0x080001b0: f000f818 .... BL __scatterload ; 0x80001e4  
 
 ## 使用gnu arm ld 之 Linker Script設定做鏈結  
-* SECTION{  
+```c
+SECTION{  
     .text 0x0000000:             //.text區塊放到 VMA=0x00000000  
     {  
         *(.text)  
@@ -37,6 +38,7 @@ _main_scatterload
         *(.data)  
     }  
 }  
+```
 * 參考linkerScript-Record.md
 ## Scatter loading Example
 * 參考ScatterLoadingImplement.md
