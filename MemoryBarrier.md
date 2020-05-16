@@ -1,7 +1,7 @@
 # Memory Barrier  
 * 程式在運行時memory被存取的順序往往會與程式碼存取的順序不一定一致,因而造成memory存取時的錯亂, Memory barrier可以讓CPU或編譯器在存取memory時有序。  
 
-* 以下參考於Keil
+* 以下參考於Keil infocenter
 * ARM處理器會按照程序的順序來執行指令或訪問數據。而最新的ARM處理器會執行指令和訪問數據的順序進行優化, ARMv6/v7架構處理器會對以下指令進行優化, 例如:  
 ```as
 LDR r0, [r1]    
@@ -77,8 +77,17 @@ note: DMB和DSB區別在於DMB可以繼續執行之後的指令, 只要這條指
       isb                 ;保證pipeline被清除
       b   relocated_code  ;轉跳到新例程  
     ```
-    
-    
+## ARM v7-m Architecture Application Level Reference Manual  
+*  DMB:
+      *  All explicit memory accesses by instructions occurring in program order before this instruction are globally observed before any explicit memory accesses due to instructions occuring in program order after this instruction are observed.  
+      *  The DMB instructinon has no effect on the ordering of other instructions executing on the processor.  
+      *  DMB ensures the apparent order of the explicit memory operations before and after the instruction, without ensuring their completion.
+*  DSB:  
+      *  The DSB instruction operation acts as a special kind of Data Memory Barrier. The DSB operation complete when all explicit memory accesses before this instruction complete.  
+      *  The DSB operation complete when all explicit memory access (before this instruction) complete.  
+      *  In addition, no instruction subsequent to the DSB can be execute until the DSB completes.  
+*  ISB:  
+      * ensures that any branches which appear in program order after the ISB are always written into the branch prediction logic with context that is visible after the ISB. This is required to ensurer correct execution of the instruction stream.
 
 
     
