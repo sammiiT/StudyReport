@@ -1,6 +1,6 @@
 # Linker Script 紀錄
 * Linker的作用就是把輸入的object檔的各個區段,整合並輸出到特定的區段(section)
-* 透過範例來了解Linker Script撰寫
+* 透過範例來了解Linker Script撰寫  
 
 ## Object File
 * .obj檔案, 經編譯器編譯後的檔案
@@ -14,8 +14,29 @@
 * 可以利用binutil的nm指令查詢檔案中的所有symbol.
 
 ## Location Counter
-* .是location counter, 用來表示symbol的位址值
-## Orphan Section
+* .是location counter, 用來表示symbol的位址值  
+
+## Orphan Section  
+* 沒有被指定在linker script, 但又在檔案中存在的section稱為orphan section: Orphan sections are sections present in the input files which are not explicitly placed into the output file by the linker script. The linker will still copy these sections into the output file by either finding, or creating a suitable output section in which to place the orphaned input section.  
+*	Orphan section放置的位可以用 .=. 來表示: The one way to influence the orphan section placement is to assign the location counter to itself, as the linker assumes that an assignment to . is setting the start address of a following output section and thus should be grouped with that section.  
+```c  
+SECTIONS{
+    start_of_text = . ;
+    .text: {
+        *(.text)
+    }
+    end_of_text = . ;
+		
+    . = . ;             //放置orphan section, 如上述的.rodata區塊(沒有被定義成.rodata{} output sectioin)
+    
+		start_of_data = . ;
+    .data: {
+        *(.data)
+    }
+    end_of_data = . ;
+}
+```
+
 
 ## Example_1: SECTION , MEMORY 指令
 * MEMORY: 描述target device的記憶體區塊位址,大小; 可以用此指令來劃分記憶體的region,告訴linker哪一塊可以存放資料,程式或變量。可以將SECTION中的各個區塊指派給MEMORY中的region。   
@@ -109,6 +130,50 @@ SECTIONS{
 * 新檔案大小:只占用9 bytes  
 [root@localhost]# ls -lh ./a.out  
 -rwxr-xr-x 1 root root 9 11-04 20:55 ./a.out
+
+
+## **Example_3**: 比較下列量者差異  
+*	**.text :{*(.text)}**  
+將.text區塊 設定成locale counter, 且位址會經linker做alignment的動作,變成 4byte alignment; 如:
+```c
+.=0x103
+.text:{
+        *(.text)
+}
+```
+最後.text的section會放到0x104, 會經過linker作alignment
+*	**.text . :{*(.text)}**  
+有多一個 . 符號, 表示.text區塊不管alignment, 就直接設定到當下的locale counter; 如:
+```c
+.= 0x103;
+.text . :{
+        *(.text)
+}
+```
+上述.text的 section會放到0x103, linker不會將其作alignment的動作
+
+##	**Example_4**: output section順序 
+```c  
+SECTIONS{
+        outputa 0x10000:{               # outputa區塊,位於0x10000
+                all.o                   # all.o的所有區塊放到outputa(.text,.data,...)
+                foo.o(.input1)          # foo.o檔案中的 .input1 區段
+        }
+        outputb:{
+                foo.o(.input2)          # foo.o檔案中的.input2區段
+                foo1.o(.input1)         # foo1.o檔案中的.input1區段
+        }
+        outputc:{
+                *(.input1)   #所有檔案中的.input1區段, 被放到outputc
+                *(.input2)   #所有被歸類為.input2 section的 區塊(section),檔案, 被放到outputc
+        }
+}
+```  
+
+*	*(.text)把所有檔案中的.text區塊輸入
+*	*(.sec1 .sec2) 把所有檔案中的.sec1和.sec2區塊作輸入
+*	*(.sec1) *(.sec2)
+
 
 
 ### Reference
