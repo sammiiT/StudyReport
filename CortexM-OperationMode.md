@@ -30,7 +30,11 @@
 *  在User mode沒有存取CONTROL暫存器的權限, 只有在Exception/Interrupt時才能再次設定CONTROL暫存器。  
 *  當control[0]設定為1時, control[1]會變成多少,會自動切換到PSP嗎??? 
 
-
+## Stack and Unstacking while changing operation mode:  
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/Stack%26Unstack.PNG)  
+*  Interrupt/Exception發生時的context switch屬於caller save。  
+*  context 會先push到caller的stack, 若當下caller是用PSP, 則會將register push到PSP,在接著執行handler mode。如上圖。若caller當下是用MSP, 則register會被push到MSP之後再處理handler。
+*  Context返回會經由EXEC_RETURN來判斷是從MSP或是從PSP pop back回cpu register。(Chapter 9)
 
 
 Reference: The Definitive Guide To The ARM Cortex-M3
