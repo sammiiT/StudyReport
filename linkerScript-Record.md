@@ -18,54 +18,60 @@
 ## Orphan Section
 
 ## Example_1: SECTION , MEMORY 指令
-* MEMORY: 描述target device的記憶體區塊位址,大小; 可以用此指令來劃分記憶體的region,告訴linker哪一塊可以存放資料,程式或變量。可以將SECTION中的各個區塊指派給MEMORY中的region。  
-        MEMORY{  
-                FLASH(rx):ORIGIN=0x00000000,LENGTH=128K  //FLASH region從0x00000000位址開始, 大小為128k, 屬性為讀和執行  
-                RAM(rwx):ORIGIN=0x20000000,LENGTH=32K   //RAM region從0x20000000位址開始,大小為32K,屬性為讀寫和執行  
-        }        
+* MEMORY: 描述target device的記憶體區塊位址,大小; 可以用此指令來劃分記憶體的region,告訴linker哪一塊可以存放資料,程式或變量。可以將SECTION中的各個區塊指派給MEMORY中的region。   
+```c
+MEMORY{  
+        FLASH(rx):ORIGIN=0x00000000,LENGTH=128K  //FLASH region從0x00000000位址開始, 大小為128k, 屬性為讀和執行  
+        RAM(rwx):ORIGIN=0x20000000,LENGTH=32K   //RAM region從0x20000000位址開始,大小為32K,屬性為讀寫和執行  
+}  
+```
 * SECTION:此指令告訴linker如何組織各個輸入的section, 並將其輸出; 同時也定義各個output section在memory中的位址。  
-        SECTIONS{  
-            .text:{  
+```c
+SECTIONS{  
+        .text:{  
                 *(.text)        //各個 obj檔案的.text區段放到.text區段   
                 *(.text.*)      //各個obj檔案的.text.*區段放到.text區段          
                 *(.rodata)  
                 _sromdev=.;     //_sromdev 符號(symbol)    
                 _eromdev=.;
                 _sidata=.;
-            }>FLASH             //.text區段會放到MEMORY的FLASH region
-            .data:AT(_sidata){      //.data區段的LMA會放到_sidata起始的位址
-                    _sdata=.;
-                    *(.data)
-                    *(.data*)
-                    _edata=.;  
-             }>RAM              //.data會放到MEMORY的RAM region
-             .bss:{  
-                    _sbss=.;  
-                    *(.bss)  
-                    _ebss=.;  
-             }>RAM              //.bss會放到MEMORY的RAM region,接續在.data的後面
-             _estack = ORIGIN(RAM) + LENGTH(RAM);
-        }
-
+        }>FLASH             //.text區段會放到MEMORY的FLASH region
+        .data:AT(_sidata){      //.data區段的LMA會放到_sidata起始的位址
+                _sdata=.;
+                *(.data)
+                *(.data*)
+                _edata=.;  
+        }>RAM              //.data會放到MEMORY的RAM region
+        .bss:{  
+                _sbss=.;  
+                *(.bss)  
+                _ebss=.;  
+        }>RAM              //.bss會放到MEMORY的RAM region,接續在.data的後面
+        _estack = ORIGIN(RAM) + LENGTH(RAM);
+}
+```  
 ## Example_2: LMA,VMA
 * 以下assembler, 編譯gcc -o xx.o -c xxx.S
 ```as
 .section .text
 _symbol_in_text:
 mov $1, %eax
+
 .section .data
 _symbol_in_data:
 .long 0x90909090
 ```
-* Linker script, 鏈結 ld ./xxx.o -T ./xxx.lds; 鏈結完之後是elf格式檔案 
-    SECTIONS  {  
+* Linker script, 鏈結 ld ./xxx.o -T ./xxx.lds; 鏈結完之後是elf格式檔案  
+```c  
+SECTIONS  {  
         .text 0x5000:{  
             *(.text)  
         }
         .data 0x8000:{  
             *(.data)  
         }  
-    }  
+}  
+```
     
 在上述的ld script指定義了VMA; 根據ld的規則, 如果沒有AT指令定義LMA, 則LMA默認為VMA。這裡兩段的VMA不一樣, 因為嵌入式系統常常會遇到下述情況, 即Flash(ROM)空間較大,RAM空間相對較小,於是我們只希望數據裝載至RAM空間(0x8000), 其他代碼就運行在Flash(0x5000)。  
 
@@ -85,16 +91,17 @@ _symbol_in_data:
 
 因為我們知道0x8000已經是Ram了，燒錄全域變數區域到一斷電, 其容就消失的Ram中？ 並且,Flash(Rom)和Ram之間相隔的0x3000 bytes不一定就對應實際的儲存區域。  
   
-更新Linker Script:下面的ld script在定義.data段時增加了AT指令來描述其LMA，這樣表示.data區段的LMA緊接在.text區段的後面, 但.data的VMA還是落在 0x8000位址上: 
-    SECTIONS{  
-       .text 0x5000:{  
+更新Linker Script:下面的ld script在定義.data段時增加了AT指令來描述其LMA，這樣表示.data區段的LMA緊接在.text區段的後面, 但.data的VMA還是落在 0x8000位址上:  
+```c
+SECTIONS{  
+        .text 0x5000:{  
           *(.text)  
        }  
        .data 0x8000:AT(ADDR(.text) + SIZEOF(.text)){  
           *(.data)  
        }  
-    }
-
+}
+```
 * 編譯, 鏈結, 查詢其內容:  
 [root@localhost]# hexdump ./a.out  
 0000000 01b8 0000 9000 9090 0090  
