@@ -33,9 +33,9 @@ note: DMB和DSB區別在於DMB可以繼續執行之後的指令, 只要這條指
     * 此範例常發生在bootloader完跳躍到User App之後的動作, 開機時bootloader從flash remap到下面的區塊, 初始化系統之後到User App就可以將此區塊重新利用。重新利用之前的事前處理,就是上述的程式碼。  
     
 * 使用Memory Barrier情況(2):**Interrupt**  
-    * 上圖表示了通用中斷控制器(GIC)的系統結構。當中斷控制器檢測到中斷發生時, 他會發送nIRQ信號給處理器。這會觸發一系列事件包括運行ISR, 並屏蔽IRQ中斷源。
+    * 上圖表示了通用中斷控制器(GIC)的系統結構。當中斷控制器檢測到中斷發生時, 他會發送nIRQ信號給處理器。這會觸發一系列事件包括運行ISR, 並屏蔽IRQ中斷源。  
     ![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptDMB.PNG)  
-    
+
     * 下面的中斷服務例程通過讀取中斷確認暫存器(IAR)來確認中斷, 不僅返回掛起中高優先級的中斷ID, 還告訴中斷控制器解除nIRQ的信號。在這之後, 中斷服務例程需要重新enable中斷, 以使更高等級的中斷能搶佔(preempt)當前的中斷(NVIC)。  
     ```as  
     Interrupt_Handler
