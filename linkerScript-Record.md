@@ -153,26 +153,7 @@ SECTIONS{
 上述.text的 section會放到0x103, linker不會將其作alignment的動作
 
 ##	**Example_4**: output section順序 
-```c  
-SECTIONS{
-        outputa 0x10000:{               # outputa區塊,位於0x10000
-                all.o                   # all.o的所有區塊放到outputa(.text,.data,...)
-                foo.o(.input1)          # foo.o檔案中的 .input1 區段
-        }
-        outputb:{
-                foo.o(.input2)          # foo.o檔案中的.input2區段
-                foo1.o(.input1)         # foo1.o檔案中的.input1區段
-        }
-        outputc:{
-                *(.input1)   #所有檔案中的.input1區段, 被放到outputc
-                *(.input2)   #所有被歸類為.input2 section的 區塊(section),檔案, 被放到outputc
-        }
-}
-```  
-
-*	*(.text)把所有檔案中的.text區塊輸入
-*	*(.sec1 .sec2) 把所有檔案中的.sec1和.sec2區塊作輸入
-*	*(.sec1) *(.sec2)
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/LinkerOrganize.png)  
 
 
 
