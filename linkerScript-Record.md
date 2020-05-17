@@ -175,9 +175,47 @@ SECTIONS{
 		*	*(.sec1 .sec2) 以檔案為主, 把所有檔案中的.sec1和.sec2區塊作輸入  
 	* 圖(c)的排列,可以用下列描述的linker script來做表示: 僅討論.sec1和.sec2為input section  
 		*	*(.sec1) *(.sec2) 以section為主, 把所有檔案的.sec1集中擺放到一個區塊, 再把所有檔案的.sec2集中放到一個區塊
-	
+
+##	Example_5: Source Code Reference  
+*	C模組中宣告變數, 編譯器對此變數的處理:  
+	*	編譯器建立symbol table時,會將變數名稱轉換程另外一種名稱; 如fortran, C++的編譯器都會進行這種轉換。 
+	*	當在C語言中宣告symbol並編譯, 編譯器會作兩件事.編譯器會保留一個空間給給此symbol,並賦值; 編譯器會建立symbol table紀錄此symbol的位址; 所以此symbol table會紀錄一個位址, 此位址指向一個空間, 空間儲存一個value; 如:  
+		```c  
+		int foo =1000;
+		```
+		*	在symbol table 產生一個叫做foo的entry, 這個entry存放int型態的位址, 指向記憶體空間,此記憶體空間的儲存值為1000; 當程式參考foo這個symbol, 編譯器會先存取symbol table找到此記憶體空間的位址, 然後code去讀取此記憶體空間的值; foo=1000。  
+		*	若要取得foo這個變數的address;取得symbol的位址;然後寫入數值1到此位址:  
+		```c  
+		int* a = &foo;  
+		*a = 1;
+		```
+		參考symbol table中的foo entry,取得其位址,在將其位址存入a這個記憶體空間。
 		
-	
+*	從linker script中宣告symbol(變數):  
+	*	linker script symbol並不等同於C語言中的變數宣告, 他是一個沒有數值的symbol(只代表一個位址)。  
+	*	在linker script中宣告symbol, 僅會在symbol table中產生一個entry,此entry僅紀錄位址(symbol僅代表一個位址而已),但不會分配任何記憶體空間給此symbol。  
+	*	如以下在linker script中的描述會產生一個叫做"foo"的symbol table, 此symbol table紀錄的值為1000, 但不會在1000這個位址上初始化任何值; 這表示使用者無法存取linker script中所宣告的symbol的位址, 僅能讀取symbol所代表的位址。  
+	```c  
+	foo = 1000;  
+	```  
+	*	linker script中宣告變數例子:  
+	```c  
+	start_of_ROM = .ROM;  
+	end_of_ROM = .ROM + sizeof(.ROM);  
+	start_of_FLASH = .FLASH;  
+	```  
+	在c code中取得linker script宣告的symbol:  
+	```c  
+	extern char start_of_ROM;  
+	extern char end_of_ROM;  
+	extern char start_of_FLASH;  
+	memory(&start_of_FLASH, &start_of_ROM, &end_of_ROM - &start_of_ROM);//使用&來取得linker script symbol的指派位址  
+	```
+	若在linker script中的symbol宣告成array模式,則上述可改寫成:  
+	```c 
+	extern char start_of_ROM[], end_of_ROM[], start_of_FLASH[];
+	memory(start_of_FLASH, start_of_ROM, end_of_ROM - start_of_ROM);
+	```  
 	
 	
 		
