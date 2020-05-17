@@ -5,16 +5,18 @@
 * 參考linkerScript-Record.md的Symbol章節和Example_5:  
   * 下列的變數定義為undefined symbol, 其實體定義在linker script中
 ```c  
-extern unsigned long _etext;  
-extern unsigned long _sidata;
-extern unsigned long _sdata;
-extern unsigned long _edata;
-extern unsigned long _sifastcode;
-extern unsigned long _sfastcode;
-extern unsigned long _efastcode;
-extern unsigned long _sbss;
-extern unsigned long _ebss;
-extern void _estack;
+extern unsigned long _etext;  // 
+extern unsigned long _sidata; //.data section的起始位址的初始值 
+extern unsigned long _sdata;  //.data section的起始位址值
+extern unsigned long _edata;  //.data section的結束位址值
+
+extern unsigned long _sifastcode; //.fastcode section的起始位址的初始值
+extern unsigned long _sfastcode;  //.fastcode section的起始位址值
+extern unsigned long _efastcode;  //.fastcode section的結束位址值
+
+extern unsigned long _sbss;  //.bss的起始位址值
+extern unsigned long _ebss;  //.bss的結束位址值
+extern void _estack;         //stack的結束位址值
 ```
 
 ```
