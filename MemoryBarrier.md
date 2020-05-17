@@ -7,7 +7,7 @@
 LDR r0, [r1]    
 STR r2, [r3]  
 ``` 
-* 假設第一條LDR指令cache miss,這樣cache就會填充, 這個動作一般會暫用好幾個clock周期的時間。經典ARM處理器(帶cache的), 比如ARM926EJ-S會等待這個動作完成, 再執行下一條STR指令。而ARM v6/v7處理器會識別出下一條指令(STR)並不需要等待第一條指令(LDR)完成(不依賴r0的值), 於是就會先執行STR指令, 而不是等待LDR指令完成。  
+* 假設第一條LDR指令cache miss,這樣cache就會填充, 這個動作一般會暫用好幾個clock周期的時間。舊架構的ARM處理器(帶cache的), 比如ARM926EJ-S會等待這個動作完成, 再執行下一條STR指令。而ARM v6/v7處理器會識別出下一條指令(STR)並不需要等待第一條指令(LDR)完成(不依賴r0的值), 於是就會先執行STR指令, 而不是等待LDR指令完成。  
 
 * 在有些情況下,類似上面提到的這種推測讀取或者亂序執行的處理器優化並不是我們所期望的, 因為可能使程序不按我們的預期執行。在這種情況下, 就有必要“Traditional ARM”行為的程序中插入內存隔離指令。ARM提供了3種內存隔離指令。  
     * **DMB(data memory barrier)**:在DMB之後的內存訪執行前, 保存所有在DMB指令之前的內存訪問完成。DMB前面的LOAD/STORE讀寫的最新值的acknowledgement在時間上一定先於DMB之後的指令   
