@@ -28,8 +28,7 @@ SECTIONS{
     end_of_text = . ;
 		
     . = . ;             //放置orphan section, 如上述的.rodata區塊(沒有被定義成.rodata{} output sectioin)
-    
-		start_of_data = . ;
+    start_of_data = . ;
     .data: {
         *(.data)
     }
@@ -157,19 +156,19 @@ SECTIONS{
 *	利用linker script來規劃各個section擺放的區域。以上圖(a),(b),(c)來做解說:  
 	*	圖(a)的排列, 可用以下描述的linker script來做表示:  
 	```c  
-	SECTIONS{
-        outputa 0x10000:{               # outputa區塊,位於0x10000
-                all.o                   # all.o的所有區塊放到outputa(.text,.data,...)
-                foo.o(.input1)          # foo.o檔案中的 .input1 區段
-        }
-        outputb:{
-                foo.o(.input2)          # foo.o檔案中的.input2區段
-                foo1.o(.input1)         # foo1.o檔案中的.input1區段
-        }
-        outputc:{
-				*(.input1)  #所有檔案中的.input1區段, 被放到outputc
-				*(.input2)  #所有被歸類為.input2 section的 區塊(section),檔案, 被放到outputc
-				}  
+	SECTIONS{  
+		outputa 0x10000:{         # outputa區塊,位於0x10000  
+			all.o                   # all.o的所有區塊放到outputa(.text,.data,...)  
+			foo.o(.input1)          # foo.o檔案中的 .input1 區段  
+		}  
+		outputb:{  
+			foo.o(.input2)          # foo.o檔案中的.input2區段  
+			foo1.o(.input1)         # foo1.o檔案中的.input1區段  
+		}	 
+		outputc:{
+			*(.intput) #所有檔案中的.input1區段, 被放到outputc
+			*(.input2) #所有被歸類為.input2 section的區塊(section)檔案, 被放到outputc  
+		}
 	}
 	```  
 	*	圖(b)的排列,可以用下列描述的linker script來做表示: 僅討論.sec1和.sec2為input section  
