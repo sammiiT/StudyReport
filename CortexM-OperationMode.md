@@ -20,7 +20,7 @@
 * Stack modeu由CONTROL register的bit[1]來控制:  
     * 0 = MSP (default), 此pointer會指向linker定義的initial_sp的起始位址。  
     * 1 = PSP  
-    * 在privileged thread 模式可以存取MSP和PSP, unprivileged thead 模式之下也有此屬性, 但不建議在unprivileged mode下使用MSP,目的是為了將OS kernel和一般的appllication做區分 。  
+    * 在privileged thread 模式可以存取MSP和PSP, unprivileged thead 模式之下也支持此屬性, 但不建議在unprivileged mode下使用MSP,目的是為了將OS kernel(用MSP)和一般的Appllication(用PSP)做區分 。  
     * Stack模式可用CONTROL register來控制, 也可以用EXEC_RETURN的 bit[2]來設定用MSP或PSP。(Chapter 8)
 *  當User mode發生exception時, PSP和MSP之間是自動切換。(Chapter8)  
       
