@@ -1,7 +1,9 @@
 # Scatter Loading Implement
 * Platform : ARM Cortex-M   
 
-## C Implementation  
+## C Implementation:
+* 參考linkerScript-Record.md的Symbol章節和Example_5:  
+  * 下列的變數定義為undefined symbol, 其實體定義在linker script中
 ```c  
 extern unsigned long _etext;  
 extern unsigned long _sidata;
@@ -13,7 +15,9 @@ extern unsigned long _efastcode;
 extern unsigned long _sbss;
 extern unsigned long _ebss;
 extern void _estack;
+```
 
+```
 void __attribute__((__interrupt__)) Reset_Handler(void){
         SystemInit();
         unsigned long *pulDest;
