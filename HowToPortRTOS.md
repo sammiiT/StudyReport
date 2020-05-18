@@ -155,7 +155,7 @@ void main(){
     * 如果不會跳到Idle task, 表示在Initial或Context Switch時的Stack Order沒有設定好  
     * 如果可以跳到Idle Task執行, 則表示OSTaskStkInit()和OSStartHighRdy()正常
 
-* 測試實作: 利LED  
+* 測試實作: 利用LED  
 ```c  
 void main(){
         OSInit();
@@ -171,13 +171,65 @@ void OSTaskIdleHook(void){//在hook函式中加上test code
 }
 
 ```  
-
-
-
-* Task與Task之間的同步(synchronization); 當兩個task同時存取一個resource時會發生。
-## Step 4: 驗證ISR level的context switch是否正常  
-* ISR與Task之間的同步; Task因外部觸發(ISR)而從Pending轉態為Ready,進而轉態Running State。
-
+## Step 6: 測試context switch  
+* Task對Task的context switch: OSCtxSW(), 會在OSSched()中被呼叫  
+	* 測試方法:  
+		*	stack initialization 必須先正常運作.  
+		*	創建一個新的task, 讓它context switch到Idle Task  
+		*	OSTimeDly(1)會呼叫OSSched(),進而觸發context switch  
+	*	測試程式:  
+	```c    
+	void main(void){
+        OSInit();//產生Idle Task, 並初始化此Task Stack
+        OSTaskCreate(TestTask, (void*)0, &TestTaskStk[99], 0); //創建一user task
+        OSStart();
+	}
+	void TestTask(void* pdata){
+        pdata = pdata;
+        while(1){
+        		OSTimeDly(1);	//時間到時會發生context switch
+        }//因為沒有實做OSTickISR和開啟timer,所以OSTimeDly會執行context switch到Idle Task
+	}
+	```  
+	
+*	ISR對Task的context switch: OSIntCtxSw(),在OSIntExit()中被呼叫  
+	*	interrupt後產生的context switch, 搭配OSTickISR()來測試  
+	*	OSTickISR(); 在ARM架構中是OS_CPU_SysTickHandler(), 最後會呼叫到OSIntExit(), 進而呼叫到OSIntCtxSw()  
+	*	測試方法: 利用LED  
+		*	在OSTickISR裡面不要呼叫OSIntExit(),並將blinking程式放到其中  
+		*	如果LED會blinking,則問題發生點就會在OSIntCtxSw()  
+		*	如果LED不會blinking,則問題發生點要往前推是否有將timer interrupt設定正確,而導致沒辦法進入OSTickISR  
+	*	測試實作:測試OSIntCtxSw()和OSTickISR()  
+	```c  
+	TestTaskStk[100];
+	void main(){
+        OSInit();
+        Turn LED OFF;
+        Install the clock tick interrupt vector;
+        OSTaskCreate(TestTask, (void*)0, &TestTaskStk[99],0);//stack grow down
+        OSStart();
+	}
+	void TestTask(void *pdate){
+  		BOOLEAN led_state;
+    	pdata=pdata;
+    	initialize the clock tick interrupt(timer);
+    	Enable interrupt;
+    	led_state = false;
+    	Turn ON LED;
+    	while(1){
+    		OSTimeDly(1);//有實作tick interrupt,所以會再context switch回來
+      		if(led_state==false){  
+            	led_state = true;  
+            	Turn ON LED;  
+        	}else{  
+            	led_state = false;  
+            	Turn OFF LED;  
+        	}  
+			}  
+	}
+	```
+	
+	
 
 
 
