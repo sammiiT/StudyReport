@@ -2,16 +2,12 @@
 * Platform: ARM cortex-M
 * RTOS: uCOSII/III
 
-## Processor Requirement
-* Compiler可以產生Reentrant Code。
-
-* 需要有Systick Interrtupt。
-
-* 可以在C Code中 enable/disable interrupt。
-
-* 足夠的RAM(internal或external),提供給若干個Task作為Stack之用。
-
-* Processor提供指令存取stack或memory的資訊,和所有的cpu register ; 如
+## Processor Requirement  
+* Compiler可以產生Reentrant Code。  
+* 需要有Systick Interrtupt。  
+* 可以在C Code中 enable/disable interrupt。  
+* 足夠的RAM(internal或external),提供給若干個Task作為Stack之用。  
+* Processor提供指令存取stack或memory的資訊,和所有的cpu register ; 如  
 ```as
 mrs   r0, psp         ; 讀取process stack pointer, 讀取cpu register 
 stmdb r0, {r4-r11}    ; r4-r11寫入 stack, 讀寫memory stack
@@ -30,7 +26,6 @@ subs  r0, r0, #0x20   ; stack pointer 位移 0x20 bytes (r4-r11), 操作r0 regis
 * Kernel 運作時對應的API新增功能:  
   * 函式有Hook名稱, 可新增內容提供額外的客製化功能。  
   * 在OS_CPU_C.c中可以查詢到相關的API。
-
 
 ## Step 2: Task stack initialization
 * 實做並測試Process Stack Initial是否正常:  
@@ -120,16 +115,15 @@ OS_CPU_SR_Restore         ;
     
     LDR     R0, [R2]          ; R0 is new process SP; SP = OSTCBHighRdy->OSTCBStkPtr;
     LDM     R0, {R4-R11}      ; Restore r4-11 from new process stack
-    ADDS    R0, R0, #0x20
+    ADDS    R0, R0, #0x20     ; stack pointer往上移0x20位址
     MSR     PSP, R0           ; Load PSP with new process SP ;開始設定新process的stack pointer指向
     ORR     LR, LR, #0x04     ; Ensure exception return uses process stack
-                              ; 此時的lr是EXEC_RETURN所以or 0x04代表返回PSP(process stack pointer)
+                              ; 此時的lr是EXEC_RETURN所以ORR 0x04代表返回PSP(process stack pointer)
     CPSIE   I                 ; enable interrupt
     BX      LR                ; Exception return will restore remaining context
                               ; 直接跳回下一個task, 不會執行 "OS_CPU_PendSVHandler" 以下的動作。
   ```  
-  
-  Note:  
+  Note: Task control block的型態如下: 
   ```c
   OS_EXT  OS_TCB           *OSTCBCur;
   typedef struct os_tcb {
@@ -137,15 +131,50 @@ OS_CPU_SR_Restore         ;
   .....
   }OS_EXT
   ```
- 
- 若考慮到第一次執行,則必須考慮到將第一個high priority task 取出  
-  ```as  
-  ```  
   
 
-## Step 3: 驗證task level context switch是否正常
-* Task與Task之間的同步(synchronization); 當兩個task同時存取一個resource時會發生。  
+## Step 5: 驗證OSStart()是否正常  
+* 驗證OSTaskStkInit()是否正常, 參考step 2。  
+* 驗證OSStartHighRdy(),在沒有create task之下,第一個High ready是IDLE_Task()
+* 可以跳到IDLE_Task()則OSStart正常
+* 測試程式如下:  
+```c  
+void main(){
+ OSInit();  //會產生Idle task, 同時也會呼叫OSTaskStkInit()
+ OSStart(); //會呼叫到OSStartHighRdy(),並執行第一個context switch到Idle task
+}
+```
+* 測試方法:  
+  * OSInit():   
+    * 呼叫OSTaskCreate產生Idle task.  
+    * OSTaskCreate呼叫OSTaskStkInit()  
+    * OSTaskStkInit()裡面的stack order沒有設定好(misaligned), 則會產生當機情況
+  * OSStart():  
+    * 找出highest priority task  
+    * 執行OSStartHighRdy(),之後會context switch到Idle task  
+    * 如果不會跳到Idle task, 表示在Initial或Context Switch時的Stack Order沒有設定好  
+    * 如果可以跳到Idle Task執行, 則表示OSTaskStkInit()和OSStartHighRdy()正常
 
+* 測試實作: 利LED  
+```c  
+void main(){
+        OSInit();
+        Turn ON LED;//執行表示OSInit()
+        OSStart();
+}
+void OSTaskIdleHook(void){//在hook函式中加上test code
+        if(LED is ON){//如果正確進入idle task則會 LED OFF
+                Turn OFF LED;
+        }else{
+                Turn ON LED;
+        }
+}
+
+```  
+
+
+
+* Task與Task之間的同步(synchronization); 當兩個task同時存取一個resource時會發生。
 ## Step 4: 驗證ISR level的context switch是否正常  
 * ISR與Task之間的同步; Task因外部觸發(ISR)而從Pending轉態為Ready,進而轉態Running State。
 
