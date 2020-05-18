@@ -211,23 +211,24 @@ void OSTaskIdleHook(void){//在hook函式中加上test code
 	}
 	void TestTask(void *pdate){
   		BOOLEAN led_state;
-    	pdata=pdata;
-    	initialize the clock tick interrupt(timer);
-    	Enable interrupt;
-    	led_state = false;
-    	Turn ON LED;
-    	while(1){
-    		OSTimeDly(1);//有實作tick interrupt,所以會再context switch回來
-      		if(led_state==false){  
-            	led_state = true;  
-            	Turn ON LED;  
-        	}else{  
-            	led_state = false;  
-            	Turn OFF LED;  
-        	}  
-			}  
+    		pdata=pdata;
+    		initialize the clock tick interrupt(timer);
+    		Enable interrupt;
+    		led_state = false;
+    		Turn ON LED;
+    		while(1){
+    			OSTimeDly(1);//有實作tick interrupt,所以會再context switch回來
+      			if(led_state==false){  
+            			led_state = true;  
+            			Turn ON LED;  
+        		}else{  
+            			led_state = false;  
+            			Turn OFF LED;  
+        		}  
+		}  
 	}
-	```
+	```  
+## stack initial, context switch, systick, ISR context switch 測試正常, 則porting完成
 	
 	
 
