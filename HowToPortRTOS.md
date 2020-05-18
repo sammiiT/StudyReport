@@ -77,8 +77,71 @@ OS_CPU_SR_Restore         ;
     MSR     PRIMASK, R0   ;設定interrupt enable 之前的OS_CPU_SR_SAVE, PRIMASK是暫存器,設定Interrupt的Enable/Disable
     BX      LR
 ```
-
-
+## Step 4: Context Switch  
+* Task對Task synchronization; 外部觸發interrupt,ISR對Task發signal  
+* context switch流程  
+  * 進入context switch之前須將interrtup disable  
+  * 取出下一個最高權限的Task control block  
+  * 執行contex switch: Cortex M系列的context switch是利用PendSV(pendable service exception)來實做, 參考ArmCortexM_Interrupt.md
+  ```as  
+  OSCtxSw  
+    LDR R0, =0xE000ED04   ;interrupt control state register
+    LDR R1, =0x10000000   ;value to trigger PendSV exception
+    STR R1, [R0]          ;write 0x10000000 into register 0xE000ED04
+                          ;If Context switch occur during ISR is executing,the pendSV exception can't be activated until the current ISR is complete   
+    BX  LR                      
+  ```
+  * PendSV exception handler執行:  
+  ```as  
+  OS_CPU_PendSVHandler        ; 定義在vector table中的PendSV handler
+                              ; 進入OS_CPU_PSVHandler之前,處理器會先將r0-r3,r12,pc,lr,psr 存放到堆疊區
+    CPSID   I                 ; disable interrupt
+    MRS     R0,PSP            ; 紀錄當下的PSP(process stack pointer)
+    SUBS    R0,R0,#0x20       ; stack growth down, 先將R0指向 R0-0x20的位址, 0x20是R4-R11共8個暫存器, 共8*4=32=0x20 
+    STM     R0, {R4-R11}      ; STM=STMIA(increment after),將R4-R11由低位址像高位址做堆疊
+    
+    LDR     R1, =OSTCBCur     ; R1載入 OSTCBCur指標變數的位址,
+    LDR     R1, [R1]          ; OSTCBCur位址的儲存值, R1是OSTCBStkPtr指標變數的位址;參考Note  
+    STR     R0, [R1]          ; 將新的stack pointer位址存入[R1], 就是OSTCBStkPtr指向的位址  
+    PUSH    {R14}             ; caller save, 接下來要呼叫C函式, 避免lr被修改,所以先將lr push到stack中    
+    LDR     R0,=OSTaskSwHook  ;  
+    BLX     R0                ; 跳到OSTaskSwHook中執行    
+    POP     {R14}             ; 將原來的lr pop到register的 r14  
+    
+    LDR     R0, =OSPrioCur    ; 設定變數OSPrioCur = OSPrioHighRdy;
+    LDR     R1, =OSPrioHighRdy
+    LDRB    R2, [R1]
+    STRB    R2, [R0]
+    
+    LDR     R0, =OSTCBCur     ; 設定變數 OSTCBCur  = OSTCBHighRdy
+    LDR     R1, =OSTCBHighRdy
+    LDR     R2, [R1]
+    STR     R2, [R0]          ; 將OSTCBCur指標指向最高priority的task control block(OSTCBHighRdy)
+    
+    LDR     R0, [R2]          ; R0 is new process SP; SP = OSTCBHighRdy->OSTCBStkPtr;
+    LDM     R0, {R4-R11}      ; Restore r4-11 from new process stack
+    ADDS    R0, R0, #0x20
+    MSR     PSP, R0           ; Load PSP with new process SP ;開始設定新process的stack pointer指向
+    ORR     LR, LR, #0x04     ; Ensure exception return uses process stack
+                              ; 此時的lr是EXEC_RETURN所以or 0x04代表返回PSP(process stack pointer)
+    CPSIE   I                 ; enable interrupt
+    BX      LR                ; Exception return will restore remaining context
+                              ; 直接跳回下一個task, 不會執行 "OS_CPU_PendSVHandler" 以下的動作。
+  ```  
+  
+  Note:  
+  ```c
+  OS_EXT  OS_TCB           *OSTCBCur;
+  typedef struct os_tcb {
+    OS_STK          *OSTCBStkPtr;
+  .....
+  }OS_EXT
+  ```
+ 
+ 若考慮到第一次執行,則必須考慮到將第一個high priority task 取出  
+  ```as  
+  ```  
+  
 
 ## Step 3: 驗證task level context switch是否正常
 * Task與Task之間的同步(synchronization); 當兩個task同時存取一個resource時會發生。  
