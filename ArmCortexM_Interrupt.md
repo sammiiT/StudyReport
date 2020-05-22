@@ -67,9 +67,20 @@ note: Exception不支援重入(reentrant)。
 ## Late Arrival: 後到先執行  
 *  當系統因interrupt/exception而執行stacking動作時, 又發生了權限更高的exception, 會先將stacking的動作完成(low and ?high?), 接著執行高權限的handler。  
 
-## PendSV
+## PendSV (Pendable Service Call):  
+*	在討論PendSV之前,需討論因OS system tick產生的同步行為:  
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/SystickContextSwitch.PNG)   
+*	上圖是兩個task, 經由systick觸發而交換CPU的執行權。在沒有任何其他外部觸發(external interrupt)的情況下, 此模型是正確的。  
+*	Systick exception執行權預設是高於其他的external interrupt, 則當external interrupt handler執行時發生Systick Exception, 會有如下問題:  
+![](https://github.com/sammiiT/Study-Report/blob/master/picture/ProblemContextSwIRQ.PNG)
+	*	當system tick exception結束會執行context switch, 此Context switch會造成原本被preempt的interrupt handler延遲; 如上圖。  
+	*	當interrupt active status=1的情況下, cortex-M 並不允許執行thread mode, 執行系統會產生usage fault exception.  
 
+*	解決上述問題:  
+	*	使用PendSV功能, 將所產生的context switch延遲到ISR執行完畢,在接著執行system tick handler執行的context switch。  
+	*	system tick Exception的priority設定為最低權限, 可以讓權限較高的Interrupt先執行。 
+	
 
-
+*	Question: 若ISR執行結果要發生context switch, system tick exception執行結果也要發生context switch,結果會如何??
 
 * Reference: The Definitive Guide to The ARM cortex-M3 Second Edition
