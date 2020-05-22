@@ -241,34 +241,34 @@ SECTIONS{
 	*	Linker Script:  
 		*	.text section: 擺放到IROM
 		```c  
-			.text :{
-				KEEP(*(.isr_vector .isr_vector.*))
-				*(.text .text.*)
-				*(.gnu.linkonce.t.*)
-				*(.glue_7)
-				*(.glue_7t)
-				*(.gcc_except_table)
-				*(.rodata .rodata*)
-				*(.gnu.linkonce.r.*)
-			} >IROM
+		.text :{
+			KEEP(*(.isr_vector .isr_vector.*))
+			*(.text .text.*)
+			*(.gnu.linkonce.t.*)
+			*(.glue_7)
+			*(.glue_7t)
+			*(.gcc_except_table)
+			*(.rodata .rodata*)
+			*(.gnu.linkonce.r.*)
+		} >IROM
  		```  
 		*	.fastcode section: 此區域的擺放的程式碼是要在RAM直型, 因為比在ROM執行快, 所以稱為.fastcode  
 		```c  
-		.fastcode :{
-    	.= ALIGN (4);
-      _sfastcode = . ;  
-      *(.glue_7t) *(.glue_7)  
-      *(.fastcode)  
-      /* 把要放在RAM的模組放到這邊 ... */
-			/* 模組用__attribute__ ((section (".text.fastcode")))*/   
-			*(.text.fastcode)   
-			/* 或自訂義section,如: __attribute__  (.text.Blinky_shift) */
+		.fastcode :{  
+			.= ALIGN (4);  
+			_sfastcode = . ;  
+			*(.glue_7t) *(.glue_7)  
+			*(.fastcode)  
+			/* 把要放在RAM的模組放到這邊 ... */  
+			/* 模組用__attribute__ ((section (".text.fastcode")))*/  
+			*(.text.fastcode)  
+			/* 或自訂義section,如: __attribute__  (.text.Blinky_shift) */  
 			*(.text.Blinky_shift)  
-			. = ALIGN (4);
-      _efastcode = . ;
-      _sidata = .;
-    } >IRAM0 AT>IROM
-		```
+			. = ALIGN (4);  
+			_efastcode = . ;  
+			_sidata = .;  
+		}	>IRAM0 AT>IROM
+		```  
 		在c模組中對應的上述fastcode section,將屬性(.text.fastcode)作為input放入,如:  
 		```c  
 		__attribute__ ((section (".text.fastcode"))) void Blinky_flash(Blinky *me, uint8_t n) {
