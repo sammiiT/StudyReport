@@ -315,15 +315,11 @@ SECTIONS{
         unsigned long *pulSrc;
         if (&_sidata != &_sdata) {// Copy the data segment initializers from flash to SRAM in ROM mode   
             pulSrc = &_sidata;
-            for(pulDest = &_sdata; pulDest < &_edata; ) {
-                *(pulDest++) = *(pulSrc++);
-            }
+            for(pulDest = &_sdata; pulDest < &_edata; ) { *(pulDest++) = *(pulSrc++); }
         }
         if (&_sifastcode != &_sfastcode) {/* Copy the .fastcode code from ROM to SRAM */
             pulSrc = &_sifastcode;
-            for(pulDest = &_sfastcode; pulDest < &_efastcode; ) {
-                *(pulDest++) = *(pulSrc++);
-            }
+            for(pulDest = &_sfastcode; pulDest < &_efastcode; ) { *(pulDest++) = *(pulSrc++); }
         }
         for(pulDest = &_sbss; pulDest < &_ebss; ){/* Zero fill the bss segment */ 
             *(pulDest++) = 0;
