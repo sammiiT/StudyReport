@@ -267,7 +267,7 @@ SECTIONS{
 			. = ALIGN (4);  
 			_efastcode = . ;  
 			_sidata = .;  
-		}	>IRAM0 AT>IROM
+		}	>IRAM0 AT>IROM	//VMA 在IRAM0區域,  LMA是在IROM區域
 		```  
 		在c模組中對應的上述fastcode section,將屬性(.text.fastcode)作為input放入,如:  
 		```c  
@@ -280,6 +280,31 @@ SECTIONS{
 		__attribute__ ((section (".text.Blinky_shift"))) void Blinky_Shift(){
 			...;
 		}
+		```  
+		*	.data section: 初始化的global, static global 擺放的區域 
+		```c  
+		.data :{
+			_sidata = LOADADDR (.data);
+			. = ALIGN(4);
+			_sdata = .;				//.data 起始位址
+			*(vtable vtable.*)
+			*(.data .data.*)	// global和static global存放位址
+			*(.gnu.linkonce.d*)
+			. = ALIGN(4);
+			_edata = . ;			// .data結束位址
+		}>IRAM0 AT>IROM			//VMA 在IRAM0區域,  LMA是在IROM區域
+		```  
+		*	.bss section
+		```c
+		.bss(NOLOAD):{
+			. = ALIGN(4);
+			_sbss = . ;				// .bss的起始位址
+			*(.bss .bss.*)
+			*(.gnu.linkonce.b*)
+			*(COMMON)
+			. = ALIGN(4);
+			_ebss = . ;				// .bss的結束位址	
+		}>IRAM0					// VMA在 IRAM0
 		```
 		
 		
