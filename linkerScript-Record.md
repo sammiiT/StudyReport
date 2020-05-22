@@ -1,6 +1,6 @@
 # Linker Script 紀錄
 * Linker的作用就是把輸入的object檔的各個區段,整合並輸出到特定的區段(section)
-* 透過範例來了解Linker Script撰寫  
+* 透過範例(On Job Training)來了解Linker Script的撰寫  
 
 ## Object File
 * .obj檔案, 經編譯器編譯後的檔案
@@ -174,9 +174,9 @@ SECTIONS{
 	*	圖(b)的排列,可以用下列描述的linker script來做表示: 僅討論.sec1和.sec2為input section  
 		*	*(.sec1 .sec2) 以檔案為主, 把所有檔案中的.sec1和.sec2區塊作輸入  
 	* 圖(c)的排列,可以用下列描述的linker script來做表示: 僅討論.sec1和.sec2為input section  
-		*	*(.sec1) *(.sec2) 以section為主, 把所有檔案的.sec1集中擺放到一個區塊, 再把所有檔案的.sec2集中放到一個區塊
+		*	*(.sec1) *(.sec2) 以section為主, 把所有檔案的.sec1集中擺放到一個區塊, 再把所有檔案的.sec2集中放到一個區塊  
 
-##	Example_5: Source Code Reference  
+## Example_5: Source Code Refernce    
 *	C模組中宣告變數, 編譯器對此變數的處理:  
 	*	編譯器建立symbol table時,會將變數名稱轉換程另外一種名稱; 如fortran, C++的編譯器都會進行這種轉換。 
 	*	當在C語言中宣告symbol並編譯, 編譯器會作兩件事.編譯器會保留一個空間給給此symbol,並賦值; 編譯器會建立symbol table紀錄此symbol的位址; 所以此symbol table會紀錄一個位址, 此位址指向一個空間, 空間儲存一個value; 如:  
@@ -217,7 +217,102 @@ SECTIONS{
 	memory(start_of_FLASH, start_of_ROM, end_of_ROM - start_of_ROM);
 	```  
 	
+## Example_6: Source Code Reference實例  
+*	ARM Cortext-M 為例, 實做了在linker script中宣告變數, 並參考此變數執行scatter loading; 以下只針對這兩像做討論:  
+	*	在c模組中(startup.c)參考的linker script symbol:   
+	```c    
+	extern unsigned long _etext;  //.text section結束的位址
 	
+	//經過初始化的global或static global擺放的位址。
+	extern unsigned long _sidata; //.data section的起始位址的初始值 
+	extern unsigned long _sdata;  //.data section的起始位址值
+	extern unsigned long _edata;  //.data section的結束位址值
+
+	//要放在RAM中執行的模組定義為.fastcode section; 在RAM中執行比ROM執行快。
+	extern unsigned long _sifastcode; //.fastcode section的起始位址的初始值
+	extern unsigned long _sfastcode;  //.fastcode section的起始位址值
+	extern unsigned long _efastcode;  //.fastcode section的結束位址值
+	
+	//尚未初始化的global或stacic global擺放的位址。
+	extern unsigned long _sbss;  //.bss的起始位址值
+	extern unsigned long _ebss;  //.bss的結束位址值
+	extern void _estack;         //stack的結束位址值
+	```  
+	*	Linker Script:  
+		*	.text section: 擺放到IROM
+		```c  
+			.text :{
+				KEEP(*(.isr_vector .isr_vector.*))
+				*(.text .text.*)
+				*(.gnu.linkonce.t.*)
+				*(.glue_7)
+				*(.glue_7t)
+				*(.gcc_except_table)
+				*(.rodata .rodata*)
+				*(.gnu.linkonce.r.*)
+			} >IROM
+ 		```  
+		*	.fastcode section: 此區域的擺放的程式碼是要在RAM直型, 因為比在ROM執行快, 所以稱為.fastcode  
+		```c  
+		.fastcode :{
+    	.= ALIGN (4);
+      _sfastcode = . ;  
+      *(.glue_7t) *(.glue_7)  
+      *(.fastcode)  
+      /* 把要放在RAM的模組放到這邊 ... */
+			/* 模組用__attribute__ ((section (".text.fastcode")))*/   
+			*(.text.fastcode)   
+			/* 或自訂義section,如: __attribute__  (.text.Blinky_shift) */
+			*(.text.Blinky_shift)  
+			. = ALIGN (4);
+      _efastcode = . ;
+      _sidata = .;
+    } >IRAM0 AT>IROM
+		```
+		在c模組中對應的上述fastcode section,將屬性(.text.fastcode)作為input放入,如:  
+		```c  
+		__attribute__ ((section (".text.fastcode"))) void Blinky_flash(Blinky *me, uint8_t n) {
+			...;
+		}
+		```  
+		在c模組中對應的上述fastcode section,將屬性(.text.Blinky_shift)作為input放入,如:  
+		```c  
+		__attribute__ ((section (".text.Blinky_shift"))) void Blinky_Shift(){
+			...;
+		}
+		```
+		
+		
+	
+	*	ARM cortex M開機執行的第一個函示為Reset_Handler(Exception), 此函示會先做scatter loading, 在data section成功拷貝到VMA之後,再進入main執行。  
+	```c
+	void __attribute__((__interrupt__)) Reset_Handler(void){
+        SystemInit();
+        unsigned long *pulDest;
+        unsigned long *pulSrc;
+        
+        if (&_sidata != &_sdata) {// Copy the data segment initializers from flash to SRAM in ROM mode   
+            pulSrc = &_sidata;
+            for(pulDest = &_sdata; pulDest < &_edata; ) {
+                *(pulDest++) = *(pulSrc++);
+            }
+        }
+        
+        if (&_sifastcode != &_sfastcode) {/* Copy the .fastcode code from ROM to SRAM */
+            pulSrc = &_sifastcode;
+            for(pulDest = &_sfastcode; pulDest < &_efastcode; ) {
+                *(pulDest++) = *(pulSrc++);
+            }
+        }
+        
+        for(pulDest = &_sbss; pulDest < &_ebss; ){/* Zero fill the bss segment */ 
+            *(pulDest++) = 0;
+        }
+        
+        main(); /* Call the application's entry point */
+	}
+	```
+
 		
 
 
