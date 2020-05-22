@@ -229,7 +229,7 @@ SECTIONS{
 	extern unsigned long _edata;  //.data section的結束位址值
 
 	//要放在RAM中執行的模組定義為.fastcode section; 在RAM中執行比ROM執行快。
-	extern unsigned long _sifastcode; //.fastcode section的起始位址的初始值
+	extern unsigned long _sifastcode; //.fastcode section的起始位址的初始值(在)
 	extern unsigned long _sfastcode;  //.fastcode section的起始位址值
 	extern unsigned long _efastcode;  //.fastcode section的結束位址值
 	
@@ -238,8 +238,8 @@ SECTIONS{
 	extern unsigned long _ebss;  //.bss的結束位址值
 	extern void _estack;         //stack的結束位址值
 	```  
-	*	Linker Script:  
-		*	.text section: 擺放到IROM
+	*	**Linker Script**:  
+		*	**.text section**: 擺放到IROM
 		```c  
 		.text :{
 			KEEP(*(.isr_vector .isr_vector.*))
@@ -252,7 +252,7 @@ SECTIONS{
 			*(.gnu.linkonce.r.*)
 		} >IROM
  		```  
-		*	.fastcode section: 此區域的擺放的程式碼是要在RAM直型, 因為比在ROM執行快, 所以稱為.fastcode  
+		*	**.fastcode section**: 此區域的擺放的程式碼是要在RAM直型, 因為比在ROM執行快, 所以稱為.fastcode  
 		```c  
 		.fastcode :{  
 			.= ALIGN (4);  
@@ -281,7 +281,7 @@ SECTIONS{
 			...;
 		}
 		```  
-		*	.data section: 初始化的global, static global 擺放的區域 
+		*	**.data section**: 初始化的global, static global 擺放的區域 
 		```c  
 		.data :{
 			_sidata = LOADADDR (.data);
@@ -294,7 +294,7 @@ SECTIONS{
 			_edata = . ;			// .data結束位址
 		}>IRAM0 AT>IROM			//VMA 在IRAM0區域,  LMA是在IROM區域
 		```  
-		*	.bss section
+		*	**.bss section**
 		```c
 		.bss(NOLOAD):{
 			. = ALIGN(4);
@@ -307,33 +307,27 @@ SECTIONS{
 		}>IRAM0					// VMA在 IRAM0
 		```
 		
-		
-	
-	*	ARM cortex M開機執行的第一個函示為Reset_Handler(Exception), 此函示會先做scatter loading, 在data section成功拷貝到VMA之後,再進入main執行。  
+	*	ARM cortex M開機執行的第一個函示為Reset_Handler(Exception), 此函示會先做scatter loading, 在data section成功拷貝到VMA之後,再進入main執行。 會用到 上述 linker script中的_sidata,_sdata,_edata,_sifastcode,_sfastcode,_efastcode,_sbss,_ebss
 	```c
 	void __attribute__((__interrupt__)) Reset_Handler(void){
         SystemInit();
         unsigned long *pulDest;
         unsigned long *pulSrc;
-        
         if (&_sidata != &_sdata) {// Copy the data segment initializers from flash to SRAM in ROM mode   
             pulSrc = &_sidata;
             for(pulDest = &_sdata; pulDest < &_edata; ) {
                 *(pulDest++) = *(pulSrc++);
             }
         }
-        
         if (&_sifastcode != &_sfastcode) {/* Copy the .fastcode code from ROM to SRAM */
             pulSrc = &_sifastcode;
             for(pulDest = &_sfastcode; pulDest < &_efastcode; ) {
                 *(pulDest++) = *(pulSrc++);
             }
         }
-        
         for(pulDest = &_sbss; pulDest < &_ebss; ){/* Zero fill the bss segment */ 
             *(pulDest++) = 0;
         }
-        
         main(); /* Call the application's entry point */
 	}
 	```
