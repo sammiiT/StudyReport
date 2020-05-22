@@ -41,4 +41,4 @@ SECTION{
 ```
 * 參考linkerScript-Record.md
 ## Scatter loading Example
-* 參考ScatterLoadingImplement.md
+* 參考linkerScript-Record.md
