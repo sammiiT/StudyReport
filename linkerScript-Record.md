@@ -292,7 +292,7 @@ SECTIONS{
 			*(.gnu.linkonce.d*)
 			. = ALIGN(4);
 			_edata = . ;			// .data結束位址
-		}>IRAM0 AT>IROM			//VMA 在IRAM0區域,  LMA是在IROM區域
+		}>IRAM0 AT>IROM			//VMA 在IRAM0區域,  LMA是在IROM區域 check
 		```  
 		*	**.bss section**
 		```c
