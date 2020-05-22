@@ -313,18 +313,18 @@ SECTIONS{
         SystemInit();
         unsigned long *pulDest;
         unsigned long *pulSrc;
-        if (&_sidata != &_sdata) {// Copy the data segment initializers from flash to SRAM in ROM mode   
+        if (&_sidata != &_sdata) {// 拷貝 data section 從flash到SRAM  
             pulSrc = &_sidata;
             for(pulDest = &_sdata; pulDest < &_edata; ) { *(pulDest++) = *(pulSrc++); }
         }
-        if (&_sifastcode != &_sfastcode) {/* Copy the .fastcode code from ROM to SRAM */
+        if (&_sifastcode != &_sfastcode) {// 拷貝.fastcode section 從flash到SRAM
             pulSrc = &_sifastcode;
             for(pulDest = &_sfastcode; pulDest < &_efastcode; ) { *(pulDest++) = *(pulSrc++); }
         }
-        for(pulDest = &_sbss; pulDest < &_ebss; ){/* Zero fill the bss segment */ 
+        for(pulDest = &_sbss; pulDest < &_ebss; ){//初始化 .bss section 
             *(pulDest++) = 0;
         }
-        main(); /* Call the application's entry point */
+        main(); // main函式進入點
 	}
 	```
 
