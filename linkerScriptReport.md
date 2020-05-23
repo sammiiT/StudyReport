@@ -224,14 +224,14 @@ SECTIONS{
 	extern unsigned long _etext;  //.text section結束的位址
 	
 	//經過初始化的global或static global擺放的位址。
-	extern unsigned long _sidata; //.data section的起始位址的初始值 
-	extern unsigned long _sdata;  //.data section的起始位址值
-	extern unsigned long _edata;  //.data section的結束位址值
+	extern unsigned long _sidata; //.data section的LMA起始位址 
+	extern unsigned long _sdata;  //.data section的VMA起始位址
+	extern unsigned long _edata;  //.data section的VMA結束位址值
 
 	//要放在RAM中執行的模組定義為.fastcode section; 在RAM中執行比ROM執行快。
-	extern unsigned long _sifastcode; //.fastcode section的起始位址的初始值(在)
-	extern unsigned long _sfastcode;  //.fastcode section的起始位址值
-	extern unsigned long _efastcode;  //.fastcode section的結束位址值
+	extern unsigned long _sifastcode; //.fastcode section的LMA起始位址
+	extern unsigned long _sfastcode;  //.fastcode section的VMA起始位址值
+	extern unsigned long _efastcode;  //.fastcode section的VMA結束位址值
 	
 	//尚未初始化的global或stacic global擺放的位址。
 	extern unsigned long _sbss;  //.bss的起始位址值
@@ -250,7 +250,19 @@ SECTIONS{
 			*(.gcc_except_table)
 			*(.rodata .rodata*)
 			*(.gnu.linkonce.r.*)
-		} >IROM
+		} >IROM  
+		/*** other sections ***/
+		.dtors :{
+			.=ALIGN(4);
+			PROVIDE(__dtors_start = .);
+			KEEP(*(SORT(.dtors.*)))
+			KEEP(*(.dtors))
+			PROVIDE(__dtors_end = .);
+			. = ALIGN(4);
+			/* End Of .text section */
+			_etext = .; 	
+			_sifastcode = .; //start of fastcode section in LMA
+		}	> IROM  
  		```  
 		*	**.fastcode section**: 此區域的擺放的程式碼是要在RAM直型, 因為比在ROM執行快, 所以稱為.fastcode  
 		```c  
@@ -284,7 +296,7 @@ SECTIONS{
 		*	**.data section**: 初始化的global, static global 擺放的區域 
 		```c  
 		.data :{
-			_sidata = LOADADDR (.data);
+			_sidata = LOADADDR (.data);	//_sidata的數值為.data section的LMA
 			. = ALIGN(4);
 			_sdata = .;				//.data 起始位址
 			*(vtable vtable.*)
@@ -314,11 +326,11 @@ SECTIONS{
         unsigned long *pulDest;
         unsigned long *pulSrc;
         if (&_sidata != &_sdata) {// 拷貝 data section 從flash到SRAM  
-            pulSrc = &_sidata;
+            pulSrc = &_sidata;	//在.data section中有定義 _sidata = LOADADDR (.data); LOADADDR為取LMA位址指令
             for(pulDest = &_sdata; pulDest < &_edata; ) { *(pulDest++) = *(pulSrc++); }
         }
         if (&_sifastcode != &_sfastcode) {// 拷貝.fastcode section 從flash到SRAM
-            pulSrc = &_sifastcode;
+            pulSrc = &_sifastcode; //在 .dtors Section中有描述到_sifastcode的 LMA
             for(pulDest = &_sfastcode; pulDest < &_efastcode; ) { *(pulDest++) = *(pulSrc++); }
         }
         for(pulDest = &_sbss; pulDest < &_ebss; ){//初始化 .bss section 
