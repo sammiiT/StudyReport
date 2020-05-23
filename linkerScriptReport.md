@@ -260,7 +260,7 @@ SECTIONS{
 			PROVIDE(__dtors_end = .);
 			. = ALIGN(4);
 			/* End Of .text section */
-			_etext = .; 	
+			_etext = .; 			//_etext和_sifastcode是一樣的位址??
 			_sifastcode = .; //start of fastcode section in LMA
 		}	> IROM  
  		```  
