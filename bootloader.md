@@ -61,7 +61,7 @@ void iap_load_app(void){	//轉跳程式
 //跳到ResetHandler, 此handler最後會執行到main,首先須將vector table重新填入SRAM,再從SRAM作一次mapping到0x00000000		
 }
 ```
-* 執行跳躍到vector table remap,從SRAM重映射到0x00000000程式:
+* 執行vector table remap,先拷貝vector table再從SRAM重映射到0x00000000程式:
 ```c
 //執行User APP
 #define APPLICATION_ADDRESS     (uint32_t)0x08004000  
@@ -88,10 +88,6 @@ int main(void){
 	(READ_REG(SYSCFG->MEMRMP)&~(SYSCFG_MEMRMP_MEM_MODE))|(SYSCFG_MEMRMP_MEM_MODE_1|SYSCFG_MEMRMP_MEM_MODE_0));	
 }
 ```
-
-
-
-
 ## BootLoader Feature  
 * Configurable application Space  
 * Flash erase  
