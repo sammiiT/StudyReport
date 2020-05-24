@@ -1,0 +1,295 @@
+cpu bus: 嵌入式系統的站存器,用cpu bus來做存取
+
+kernel再設備模型的基礎上(device 和 device driver),做了更進一步的封裝, 抽象出 抽象層
+抽象層 platform_bus, platform_device, platform_driver
+
+
+platform 設備相關的實現位於,
+include/linux/platform_device.h
+drivers/base/platform.c
+
+
+platform bus, 基於底層bus模塊,抽象出一個虛擬的platform bus,用於掛載platform設備
+platform device, 基於底層device 模塊, 抽象出platform device, 用於表示platform設備
+platform driver,基於底層device_driver模塊, 抽象出platform driver,用於驅動platform設備
+
+platform提供的接口包括: platform device和plagtorm driver兩個數據結構,以及他們的操作函數
+
+
+//===============================================================================
+	include/linux/platform_device.h
+struct platform_device{
+	const char *name;
+	int             id;
+        bool            id_auto;
+        struct device   dev;
+        u32             num_resources;
+        struct resource * resource;
+
+        const struct platform_device_id *id_entry;
+
+        /* MFD cell pointer */
+        struct mfd_cell *mfd_cell;
+
+        /* arch specific additions */
+        struct pdev_archdata    archdata;
+};
+
+
+
+dev: 真正的設備(platform設備只是一個特殊的設備,其核心邏輯是由底層的模塊實現)
+
+name: 設備的名稱,和struct device結構中的init_name意義相同同,實際上該名稱在設備註冊時,會拷貝到dev.init_name中(參考 _device和device driver)
+
+id: 用於標示該設備的ID.
+在_Bus中有提過, 內核允許存在多個名稱相同的設備,而設備驅動的probe, 依賴於名稱,linux的策略是;
+(1)在bus上的設備鏈表中查找device,和對應的device_driver比對name
+(2)如果相同,則查看該設備是否綁定了driver(查看其dev->driver是否爲空)
+(3)如果已綁定,則不會執行probe動作; 如果沒有綁定,則以該device指針爲參數,調用driver的probe接口....??
+(4)在driver的probe接口中,通過判斷設備ID,可以知道此次驅動的設備是哪個.
+
+id_auto:指示在註冊設備時,是否自動賦予ID值(可以不需要人爲指定)
+
+num_resouorce, resource: 該設備的資源描述,由struct resource(include/linux/ioport.h)結構抽象.
+
+在linux中, 系統資源包括I/O, memory,Register,IRQ,DMA,Bus等多種類型, 這些資源大多具有獨佔性,不許多個設備同時使用
+,因此linux kernel提供了API,用於分配,管理這些資源.當某個設備需要使用某些資源時,只需利用struct resource組織這些資源(名稱,類型,起始地址,結束地址),並保存在該設備的resource指標中即可,然後在probe時,設備需求會調用資源,管理接口,分配,使用這些資源.. 內核的資源管理邏輯,可以判斷這些資源是否已被使用,是否可被使用...等.
+
+-------- probe的功能定義??: 將driver 載入記憶體???
+
+
+id_entry: 和kernel模塊相關的內容;
+mfd_cell: 和MFD設備相關的內容
+archdata:目的是為了保存一些architecture相關的數據,在arch/arm/include/asm/device.h中的struct pdev_archdata結構中有定義.
+
+
+(*)Platform Device提供的API; 提供設備的分配,註冊接口,"供其他driver使用"-----??
+
+extern int platform_device_register(struct platform_device *);
+extern void platform_device_unregister(struct platform_device *);
+-設備註冊/註銷接口,和底層的device_register接口類似.
+
+extern void arch_setup_pdev_archdata(struct platform_device *);
+-設定platform_device變量中的archdata指標. -----????
+
+extern struct resource *platform_get_resource(struct platform_device *,unsigned int, unsigned int);
+extern int platform_get_irq(struct platform_device *, unsigned int);
+extern struct resource *platform_get_resource_byname(struct platform_device *,unsigned int,const char *);
+extern int platform_get_irq_byname(struct platform_device *, const char *);
+-通過這些接口,可以取得platform_device變數中的resource信息,取得IRQ number...等
+
+
+extern int platform_add_devices(struct platform_device **, int);
+
+
+extern struct platform_device *platform_device_register_full(const struct platform_device_info *pdevinfo);
+static inline struct platform_device *platform_device_register_resndata(
+			struct device *parent, const char *name, int id,
+			const struct resource *res, unsigned int num,
+			const void *data, size_t size)
+static inline struct platform_device *platform_device_register_simple(
+					const char *name, int id,
+					const struct resource *res, unsigned int num)
+static inline struct platform_device *platform_device_register_data(
+				struct device *parent, const char *name, int id,
+				const void *data, size_t size)
+
+-其他形式的設備註冊,使用者需提供一些必要的信息,如name, ID,resource...等,platform模組就會自動分配一個struct platform_device變數,填充內容後,註冊到內核中
+
+
+extern struct platform_device *platform_device_alloc(const char *name, int id);
+-以name和id爲參數,動態分配一個struct platform_device變量.
+
+extern int platform_device_add_resources(struct platform_device *pdev,
+					const struct resource *res,
+					unsigned int num);
+-向platform device中增加資源描述
+
+
+extern int platform_device_add_data(struct platform_device *pdev,
+				const void *data, size_t size);
+-向platform device中添加自定義數據(保存在pdev->dev.platform_data指標中)
+
+extern int platform_device_add(struct platform_device *pdev);
+extern void platform_device_del(struct platform_device *pdev);
+extern void platform_device_put(struct platform_device *pdev);
+-其他操作接口
+
+
+
+
+//=====================================================================================
+
+
+//early_platform_driver-----???參考下面描述
+
+用於platform設備驅動的數據結構: include/linux/platform_device.h
+struct platform_driver{
+       int (*probe)(struct platform_device *);
+       int (*remove)(struct platform_device *);
+       void (*shutdown)(struct platform_device *);
+       int (*suspend)(struct platform_device *, pm_message_t state);
+       int (*resume)(struct platform_device *);
+       struct device_driver driver;
+       const struct platform_device_id *id_table;
+};
+
+struct platform_driver結構和struct device_driver非常類似,提供probe,remove,suspend,resume等回調函數.
+struct device_driver-----???
+
+id_table:功能和of_match_table, acpi_match_table功能類似:提供其他方式的設備probe, kernel會在適當時機檢查device和device_driver的名子,如果匹配,則執行probe; 除了名稱之外還有其他的匹配方式----???
+
+
+(*)Platform Driver提供的API:提供 struct platfor_driver的分配,註冊等功能----??
+extern int platform_driver_register(struct platform_driver *);
+extern void platform_driver_unregister(struct platform_driver *);
+extern int platform_driver_probe(struct platform_driver *driver,int (*probe)(struct platform_device *));
+static inline void *platform_get_drvdata(const struct platform_device *pdev);
+static inline void platform_set_drvdata(struct platform_device *pdev,void *data);
+
+
+
+platfor_driver_register,platform_driver_unregister,platform driver的註冊,註銷接口
+platform_driver_probe, 執行probe的動作：
+platform_set_drvdata,platform_get_drvdata,設置或取得driver保存在device變數中的私有數據.
+
+
+//====================================================================
+
+裝置需註冊platform device,和註冊platform driver; kernel提供了一個API,可同時註冊platform_device和
+platform_driver.  註冊完platform_driver之後並分配一個platform device.
+
+extern struct platform_device *platform_create_bundle(
+	struct platform_driver *driver, 
+	int (*probe)(struct platform_device *),
+	struct resource *res, 
+	unsigned int n_res,
+	const void *data, 
+	size_t size);
+(1)只要提供一個platform_driver(要把driver的probe接口函式傳入),
+(2)告知設備佔用的資源信息,
+platform模組會幫忙分配資源,並執行probe操作,對於那些不需要熱插拔的設備來說,這種方式很省事
+
+
+//=====================================================================
+
+early platform device/driver
+內核起動時,要完成一定初始化的操作之後,才會處理device和driver的註冊及probe,因此在這之前
+platform設備是無法使用的, 但是linux中,有些設備需要盡早使用(如啟動過程中充當console輸出的serial設備),
+所以platform模組提供了一種稱作early platform device/driver的機制,允許驅動開發人員,在開發驅動時,向
+kernel註冊可在早期啟動過程使用的driver., API如下:
+
+extern int early_platform_driver_register(struct early_platform_driver *epdrv, char *buf);
+- 註冊一個用於early device的driver
+
+
+extern void early_platform_add_devices(struct platform_device **devs, int num);
+-添加一個early device
+
+static inline int is_early_platform_device(struct platform_device *pdev)
+{
+    return !pdev->dev.driver;
+}
+-判斷指定的device是否為eearly device
+
+
+extern void early_platform_driver_register_all(char *class_str);
+-將指定class的所有driver註冊爲early device driver.
+
+extern int early_platform_driver_probe(char *class_str,int nr_probe, int user_only);
+-probe 指定class爲 early device
+
+extern void early_platform_cleanup(void);
+-清除所有的early dvice/driver
+
+
+driver register和 add device的關係------?? 參考之後的描述
+
+
+//============================================================================
+
+platform模組的內部動作解析
+
+
+platform模組的初始化是由/drivers/base/platform.c中platform_bus_init接口完成的,實作如下
+
+int __init platform_bus_init(void)
+{
+        int error;
+
+        early_platform_cleanup();
+
+        error = device_register(&platform_bus);
+        if (error)
+                return error;
+        error =  bus_register(&platform_bus_type);
+        if (error)
+                device_unregister(&platform_bus);
+        return error;
+}
+
+early_platform_cleanup
+-清除所有early device/driver相關的代碼, 因為執行到此時,證明系統已經完成了early階段的啟動,
+轉而進行正常的設備初始化,啓動操作,所以不在需要early platform相關的東西.
+
+device_register
+-註冊一個名稱爲platform_bus_type的bus,該bus定義如下
+
+struct bus_type platform_bus_type = {
+        .name           = "platform",
+        .dev_attrs      = platform_dev_attrs,
+        .match          = platform_match,
+        .uevent         = platform_uevent,
+        .pm             = &platform_dev_pm_ops,
+};
+
+
+
+
+該步驟會在sysfs中創建 /sys/bus/platform 目錄,同時,結合Bus的描述, 會在/sys/bus/platform/目錄下,創建
+-uevent attribute(/sys/bus/platform/uevent)
+-devices目錄
+-drivers目錄
+-drivers_probe 的attribute (/sys/bus/platform/drivers_probe)
+-drivers_autoprobe 的attribute (/sys/bus/platform/drivers_autoprobe)
+
+
+//========================================================================
+
+platform device 和 platform driver的註冊:
+-platform device; 透過platform_device_add 接口實現
+-platform driver; 透過platform_driver_register 接口實現
+
+
+platform_device_add的內部動作:
+-如果設備沒有指定父設備,將其父設備設置爲platform_bus,即/sys/devices/platform/所代表的設備,這時該設備的
+sysfs目錄爲"/sys/devices/platform/xxx_device"
+
+-將該設備的bus指定爲platform_bus_type (pdev->dev.bus=&platform_bus_type)
+
+-根據設備的ID,修改或者設置設備的名稱,對於多個同名的設備,可以使用ID區分,在這裏將實際名稱修改爲"name.id"的形式
+
+-調用resource模塊的insert_resource接口,將該設備需要使用的resource統一管理起來(在這之前,只是聲明了本設備需要使用那些resource,但resource並不知情,也就無從管理,因此需要告知)
+
+-調用device_add接口,將內遷的struct device變數加到kernel中
+
+
+platform_driver_register的內部動作:
+-將該driver的bus指定爲platform_bus_type (drv->driver.bus=&platform_bus_type)
+-如果該platform driver提供了probe, remove, shutdown等回調函數,將他內嵌struct driver變數的probe,remove,shutdown
+...等指標,設置爲platform模組提供函數,包括platform_drv_probe,platform_drv_remove和platform_drv_shutdown.因為probe
+等動作會從struct driver變量開始,經過platform_drv_xxx等接口的轉接,就可以到達platform driver自身的回調函數中(callback function).
+
+誰在上層,誰在下層-----???
+
+-調用driver_register接口,將內嵌的struct driver變數添加到kernel中
+
+
+//==========================================================================
+
+platform設備的probe:
+設備的probe,都發生在向指定的bus來添加device或device_driver時,由bus模塊的bus_probe_device,或者device_driver模塊
+driver_attach接口觸發.
+
+
+
