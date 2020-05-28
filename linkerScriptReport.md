@@ -70,6 +70,11 @@ SECTIONS{
         _estack = ORIGIN(RAM) + LENGTH(RAM);
 }
 ```  
+## Example_1.1: HIDDEN,PROVIDE 指令  
+*	**HIDDEN**: 跟static有點相似,表示這個symbol的scope僅在linker script模組之中。 
+*	**PROVIDE**:使用PROVIDE的symbol代表此symbol可以在c模組中被重新宣告, 且進行link時會用c模組中的定義; 若沒有在c模組中宣告,則link時使用linker script的定義。  
+*	**PROVIDE_HIDDEN**: 如同PROVIDE, 但其scope僅限於當下的elf檔案。
+
 ## Example_2: LMA,VMA
 * 以下assembler, 編譯gcc -o xx.o -c xxx.S
 ```as
