@@ -1,1 +1,0 @@
-# ELF format筆記
