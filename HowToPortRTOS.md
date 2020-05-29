@@ -88,7 +88,7 @@ OS_CPU_SR_Restore         ;
   ```
   * PendSV exception handler執行:  
   ```as  
-  PendSVHandler								; 定義在vector table中的PendSV handler
+  PendSVHandler		    ; 定義在vector table中的PendSV handler
                               ; 進入PendSVHandler之前,處理器會先將r0-r3,r12,pc,lr,psr 存放到堆疊區
     CPSID   I                 ; disable interrupt
     MRS     R0,PSP            ; 紀錄當下的PSP(process stack pointer)
