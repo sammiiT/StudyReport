@@ -88,8 +88,8 @@ OS_CPU_SR_Restore         ;
   ```
   * PendSV exception handler執行:  
   ```as  
-  OS_CPU_PendSVHandler        ; 定義在vector table中的PendSV handler
-                              ; 進入OS_CPU_PSVHandler之前,處理器會先將r0-r3,r12,pc,lr,psr 存放到堆疊區
+  PendSVHandler								; 定義在vector table中的PendSV handler
+                              ; 進入PendSVHandler之前,處理器會先將r0-r3,r12,pc,lr,psr 存放到堆疊區
     CPSID   I                 ; disable interrupt
     MRS     R0,PSP            ; 紀錄當下的PSP(process stack pointer)
     SUBS    R0,R0,#0x20       ; stack growth down, 先將R0指向 R0-0x20的位址, 0x20是R4-R11共8個暫存器, 共8*4=32=0x20 
