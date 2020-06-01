@@ -37,7 +37,7 @@
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/OperationMode.png)  
 *  系統一開機時,是在privileged mode, 經由設定CONTROL[0]=1, 會切換到User Mode(unprivileged)。  
 *  在User mode沒有存取CONTROL暫存器的權限, 只有在Exception/Interrupt時才能再次設定CONTROL暫存器。  
-*  當control[0]設定為1時, control[1]會變成多少,會自動切換到PSP嗎??? 
+*  當control[0]設定為1時(unprivileged thread), control[1]會變成多少,會自動切換到PSP? 在unprivileged thread mode是可以使用MSP,但不建議;目的是為了將OS kernel(用MSP)和一般的Appllication(用PSP)做區分。
 
 ## Stack and Unstacking while changing operation mode:  
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/Stack%26Unstack.PNG)  
