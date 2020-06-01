@@ -48,8 +48,15 @@
         * 0xFFFFFFF1: 表示return時回到handler mode。  
         * 0xFFFFFFF9: 表示return時回到thread mode用main stack。  
         * 0xFFFFFFFD: 表示return時回到thread mode,用process stack。  
-    * 發生interrupt時, LR會儲存EXC_RETURN的數值; 而Function Call時,LR會記錄的caller下一個執行指令,返回時用到。          
-
+    * 發生interrupt時, LR會儲存EXC_RETURN的數值; 而Function Call時,LR會記錄的caller下一個執行指令,返回時用到。  
+		```as  
+		#執行context switch從handler mode跳回thread mode PSP模式  
+		R0, {R4-R11}              ;Restore r4-11 from new process stack  
+		ADDS    R0, R0, #0x20     ; stack pointer往上移0x20位址  
+		MSR     PSP, R0           ; Load PSP with new process SP ;開始設定新process的stack pointer指向  
+		ORR     LR, LR, #0x04     ; Ensure EXEC_RETURN process stack  
+		                          ; 此時的lr是EXEC_RETURN所以ORR 0x04代表返回PSP(process stack pointer)
+		```
 ## Interrupt/Exception結束:
 * Unstacking: MSP或PSP的內容pop回CPU register  
 * NVIC register update:  
@@ -80,7 +87,7 @@ note: Exception不支援重入(reentrant)。
 	*	使用PendSV功能, 將所產生的context switch延遲到ISR執行完畢,在接著執行system tick handler執行的context switch。  
 	*	system tick Exception的priority設定為最低權限, 可以讓權限較高的Interrupt先執行。 
 	
-
-*	Question: 若ISR執行結果要發生context switch, system tick exception執行結果也要發生context switch,結果會如何??
+*	Question: 若ISR執行結果要發生context switch, system tick exception執行結果也要發生context switch,結果會如何??  
+	*	在進入context switch(PendSV)之前,都會先進入OS的Schedule(), 那兩種情況下被喚醒的task只會有一個priority是較高的, 所以當真正進入PendSV_Handler時只是從priority q中取出最高權限的那一個TCB來進行context switch。
 
 * Reference: The Definitive Guide to The ARM cortex-M3 Second Edition
