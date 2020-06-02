@@ -132,4 +132,5 @@ __asm void PendSV_Handler(void)
     ALIGN 4
 }
 ```
-
+*	Systick exception --> PendSV exception 狀態圖:  
+![](https://github.com/sammiiT/StudyReport/blob/master/picture/SysTickToPendSV.png)
