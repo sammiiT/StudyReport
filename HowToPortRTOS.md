@@ -37,7 +37,7 @@ subs  r0, r0, #0x20   ; stack pointer 位移 0x20 bytes (r4-r11), 操作r0 regis
   CPU_STK  *p_stk;
   p_stk = &p_stk_base[stk_size];                          //stack grows down, set stack bottom at high address;Load stack pointer 
                                                           //this part of initialization is the same as the order of exception  
-  *--p_stk = (CPU_STK)0x01000000u;                        /* xPSR                                                   */
+  *--p_stk = (CPU_STK)0x01000000u;                        /* xPSR   set thumb bit                                                */
   *--p_stk = (CPU_STK)p_task;                             /* Entry Point                                            */
   *--p_stk = (CPU_STK)OS_TaskReturn;                      /* R14 (LR)                                               */
   *--p_stk = (CPU_STK)0x12121212u;                        /* R12                                                    */
