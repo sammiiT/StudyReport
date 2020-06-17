@@ -51,7 +51,7 @@
     * 發生interrupt時, LR會儲存EXC_RETURN的數值; 而Function Call時,LR會記錄的caller下一個執行指令,返回時用到。  
 		```as  
 		#執行context switch從handler mode跳回thread mode PSP模式  
-		LDM			R0, {R4-R11}      ;Restore r4-11 from new process stack  
+		LDM     R0, {R4-R11}      ;Restore r4-11 from new process stack  
 		ADDS    R0, R0, #0x20     ; stack pointer往上移0x20位址  
 		MSR     PSP, R0           ; Load PSP with new process SP ;開始設定新process的stack pointer指向  
 		ORR     LR, LR, #0x04     ; Ensure EXEC_RETURN process stack  
