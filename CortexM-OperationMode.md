@@ -17,11 +17,11 @@
 
 ## Stack Mode:  
 * 堆疊有兩種模式, MSP(main stack pointer), PSP(process stack pointer)  
-* Stack modeu由CONTROL register的bit[1]來控制:  
+* Stack mode由CONTROL register的bit[1]來控制:  
 	*	0 = MSP (default), 此pointer會指向linker定義的initial_sp的起始位址。 
   * 1 = PSP  
   * 在privileged thread 模式可以存取MSP和PSP, unprivileged thead 模式之下也支持此屬性, 但不建議在unprivileged mode下使用MSP,目的是為了將OS kernel(用MSP)和一般的Appllication(用PSP)做區分 。  
-  *	Stack模式可用CONTROL register來控制, 也可以用EXEC_RETURN的 bit[2]來設定用MSP或PSP。(Chapter 8)   
+  *	Stack模式可用CONTROL register來控制, 也可以用EXC_RETURN的 bit[2]來設定用MSP或PSP。(Chapter 8)   
 	*	EXEC_RETRUN是在系統在handler mode(exception/interrupt)時的LR數值, 可藉由return回thread mode時設定其bit[2]來控制是回到MSP或PSP。 參考HowToPortRTOS.md 的context switch最後的描述, 即為從handler mode在跳回thread mode時,利用EXEC_RETURN來決定MSP或PSP設定。  
 			
 	```as  
@@ -44,7 +44,7 @@
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/Stack%26Unstack.PNG)  
 *  Interrupt/Exception發生時的context switch屬於caller save。  
 *  context 會先push到caller的stack, 若當下caller是用PSP, 則會將register push到PSP,在接著執行handler mode。如上圖。若caller當下是用MSP, 則register會被push到MSP之後再處理handler。
-*  Context返回會經由EXEC_RETURN來判斷是從MSP或是從PSP pop back回cpu register。(Chapter 9)
+*  Context返回會經由EXC_RETURN來判斷是從MSP或是從PSP pop back回cpu register。(Chapter 9)
 
 
 Reference: The Definitive Guide To The ARM Cortex-M3
