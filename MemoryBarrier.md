@@ -10,8 +10,9 @@ STR r2, [r3]
 * 假設第一條LDR指令cache miss,這樣cache就會填充, 這個動作一般會暫用好幾個clock周期的時間。舊架構的ARM處理器(帶cache的), 比如ARM926EJ-S會等待這個動作完成, 再執行下一條STR指令。而ARM v6/v7處理器會識別出下一條指令(STR)並不需要等待第一條指令(LDR)完成(不依賴r0的值), 於是就會先執行STR指令, 而不是等待LDR指令完成。  
 
 * 在有些情況下,類似上面提到的這種推測讀取或者亂序執行的處理器優化並不是我們所期望的, 因為可能使程序不按我們的預期執行。在這種情況下, 就有必要“Traditional ARM”行為的程序中插入內存隔離指令。ARM提供了3種內存隔離指令。  
-    * **DMB(data memory barrier)**:在DMB之後的內存訪執行前, 保存所有在DMB指令之前的內存訪問完成。DMB前面的LOAD/STORE讀寫的最新值的acknowledgement在時間上一定先於DMB之後的指令   
-    * **DSB(data synchronize barrier)**:DSB前面所有的指令,都必須執行完程, 才會執行DSB後面的指令。  
+    * **DMB(data memory barrier)**:在DMB之後的內存訪執行前, 保存所有在DMB指令之前的內存訪問完成。DMB前面的LOAD/STORE讀寫的最新值的acknowledgement在時間上一定先於DMB之後的指令;(在DMB之後的data memory transfer都必須等待DMB之前的data memory transfer完成
+)。   
+    * **DSB(data synchronize barrier)**:DSB前面所有的指令,都必須執行完程, 才會執行DSB後面的指令;(在DSB之後的任何指令,都必須等待DSB之前的data memory transfer完成)。  
     * **ISB(instruction synchronize barrier)**:清除(flush)pipeline, 使得所有ISB之後的執行指令都是從cache或內存中獲得的(而不是從pipeline中)。  
  
 note: DMB和DSB區別在於DMB可以繼續執行之後的指令, 只要這條指令不是內存訪問指令(在interrupt中所執行的內存運作, 用DMB隔離不夠嚴謹)。DSB不管他後面是甚麼指令,都會強迫CPU等待DSB之前的指令執行完畢。 而ISB不僅做了DSB所做的事情, 還會將流水線(pipeline)清空。  
