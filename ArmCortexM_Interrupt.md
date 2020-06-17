@@ -62,9 +62,9 @@
 * Unstacking: MSP或PSP的內容pop回CPU register  
 * NVIC register update:  
     
-note: interrupt/exception 觸發,結束; 上述動作都是自動完成, 使用者不須自己寫程式完成。  
-note: cortex-m3 rev.2之前的版本的stack frame是4byte aligned, rev.2之後的版本是8 bytes aligned; 可經由NVIC暫存器的STKALIGN bit來設定。  
-note: Exception不支援重入(reentrant)。  
+**Note**: interrupt/exception 觸發,結束; 上述動作都是自動完成, 使用者不須自己寫程式完成。  
+**Note**: cortex-m3 rev.2之前的版本的stack frame是4byte aligned, rev.2之後的版本是8 bytes aligned; 可經由NVIC暫存器的STKALIGN bit來設定。  
+**Note**: Exception不支援重入(reentrant)。  
 
 ## Tail-chaining Interrupt:  
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/Tail-Chaining.PNG)
