@@ -19,7 +19,7 @@
 
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptPendingBehavior2.png)  
 *  interrupt active bit:執行handler mode時會自動舉起, interrupt return時會自動清除。如左圖。  
-*  若interrupt request維持不清除, 當handler mode結束時會pending state會再舉起, 則interrupt handler會再執行一次。如右圖。  
+*  若interrupt request維持不清除, 當handler mode結束時會pending state會再舉起, 則interrupt handler會再執行一次。如右圖, Tail-Chaining機制。  
 
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptPendingBehavior3.png)  
 *  在pending state舉起時, 若interrupt request連續觸發, handler只會執行一次。左圖。  
