@@ -1,5 +1,5 @@
 #	Context Switch by PendSV  
-*	利用systick exception和PendSV exception來實現context switch。
+*	利用systick exception和PendSV exception來實現context switch; Context Switch用PendSV exception來做實現。
 *	目的是為了解決在執行Interrupt handler時,OS介入造成context switch,而產生usage fault的風險。  
 *	參考ArmCortexM_Interrupt.md的問題描述。  
 
