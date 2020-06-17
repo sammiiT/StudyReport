@@ -55,7 +55,8 @@
 		ADDS    R0, R0, #0x20     ; stack pointer往上移0x20位址  
 		MSR     PSP, R0           ; Load PSP with new process SP ;開始設定新process的stack pointer指向  
 		ORR     LR, LR, #0x04     ; Ensure EXEC_RETURN process stack  
-		                          ; 此時的lr是EXEC_RETURN所以ORR 0x04代表返回PSP(process stack pointer)
+		                          ; 此時的lr是EXEC_RETURN所以ORR 0x04代表返回PSP(process stack pointer)  
+		                          ; 之前的r0~r3, r12, lr,pc,PSR會自動從PSP, pop回register.
 		```
 ## Interrupt/Exception結束:
 * Unstacking: MSP或PSP的內容pop回CPU register  
