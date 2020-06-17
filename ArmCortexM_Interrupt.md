@@ -31,7 +31,7 @@
 *  pending status 同時也控制active status。  
 *  active status與handler的動作時間是一樣的。
 
-## Interrupt/Exception Sequences:  
+## Interrupt/Exception Sequences:當interrupt發生時會有以下動作  
 * **Stacking**:   
     * 將r0-r3,r12,lr,pc,psr, 8個暫存器堆疊至stack; 此stack是main stack 或 process stack, 由當下Control Register決定; CONTROL[1]。  
     * 在Interrupt/Exception handler中, 永遠用main stack。
