@@ -25,11 +25,12 @@
 	*	EXEC_RETRUN是在系統在handler mode(exception/interrupt)時的LR數值, 可藉由return回thread mode時設定其bit[2]來控制是回到MSP或PSP。 參考HowToPortRTOS.md 的context switch最後的描述, 即為從handler mode在跳回thread mode時,利用EXEC_RETURN來決定MSP或PSP設定。  
 			
 	```as  
-	R0, {R4-R11}      	    ; Restore r4-11 from new process stack  
+	LDM     R0, {R4-R11}      ; Restore r4-11 from new process stack  
 	ADDS    R0, R0, #0x20     ; stack pointer往上移0x20位址  
 	MSR     PSP, R0           ; Load PSP with new process SP ;開始設定新process的stack pointer指向  
 	ORR     LR, LR, #0x04     ; Ensure EXEC_RETURN process stack  
-	                          ; 此時的lr是EXEC_RETURN所以ORR 0x04代表返回PSP(process stack pointer)
+	                          ; 此時的lr是EXEC_RETURN所以ORR 0x04代表返回PSP(process stack pointer)  
+	                          ; 之前的r0~r3, r12, lr,pc,PSR會自動從PSP, pop回register.
 	```
 *  當User mode發生exception時, PSP和MSP之間是自動切換。(Chapter8)  
       
