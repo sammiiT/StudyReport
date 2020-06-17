@@ -1,6 +1,6 @@
 #	Context Switch by PendSV  
 *	利用systick exception和PendSV exception來實現context switch; Context Switch用PendSV exception來做實現。
-*	目的是為了解決在執行Interrupt handler時,OS介入造成context switch,而產生usage fault的風險。  
+*	目的是為了解決在執行Interrupt handler時, OS介入造成context switch, 而產生usage fault的風險。  
 *	參考ArmCortexM_Interrupt.md的問題描述。  
 
 ##	Example: 實作 ArmCortexM_Interrupt.md中的OS tick同步行為 
@@ -28,7 +28,8 @@ void SysTick_Handler(void){
 	}
 	
 	//將interrup control state register(0xE000ED04)的bit[28]=1, 則當systick_handler結束之後,會進入pendsv_handler
-	if (curr_task!=next_task){
+	//if (curr_task!=next_task){
+	if(cur!=next){
 		SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk; //Set PendSV to pending										
 	}
 }
@@ -78,8 +79,9 @@ void OS_Start(void)
     HW32_REG((_psp[1] + (15<<2))) = 0x01000000;               // xPSR
 
     //taskA先執行
-    cur = 0;
-
+    cur = 0; /* 從TaskA開始, stackA其實可以不用initialization*/  
+		/* 從TaskX開始, stackX其實可以不用initialization*/
+		
     //設定PSP(stack pointer)的指向的位址
     __set_PSP((_psp[cur] + 16*4));
 
