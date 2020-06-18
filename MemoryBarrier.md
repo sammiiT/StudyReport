@@ -32,7 +32,12 @@ STR r2, [r3]
     ```  
     * 如果沒有STR和BL中間的DMB,  就不能保證STR在複製代碼到底部內存(block_copy_routine)之前已經完成, 因為複製過程可能會通過STR寫入的數據還在寫緩衝過程中就運行。DMB指令強迫所有DMB之前的數據訪問完成。而ISB指令防止了在複製代碼結束前就從RAM中取指令。  
     * 此範例常發生在bootloader完跳躍到User App之後的動作, 開機時bootloader從flash remap到下面的區塊, 初始化系統之後到User App就可以將此區塊重新利用(如copy vector table)。重新利用之前的事前處理,就是上述的程式碼。  
-    
+
+**補充**: The definitive guide to ARM cortexM0 M0+ , p674 
+Some cortexM MCU have memory remapping feature to enable the processor to boot up from a boot loader at address 0 and the switch the memory map t execute program in flash alsom from address 0. The memory remapping function might also be able to remap some of the SRAM to address 0. **When switching memory maps**, a DSB and then an ISB should be used  after the switch to ensure that the processor fetches instructions with the new memory map.  
+在轉換memory map時,必須使用DSB和ISB。
+ 
+ 
 * 使用Memory Barrier(DSB)情況(2):**Interrupt**  
     * 上圖表示了通用中斷控制器(GIC)的系統結構。當中斷控制器檢測到中斷發生時, 他會發送nIRQ信號給處理器。這會觸發一系列事件包括運行ISR, 並屏蔽IRQ中斷源。  
     ![](https://github.com/sammiiT/Study-Report/blob/master/picture/InterruptDMB.PNG)  
