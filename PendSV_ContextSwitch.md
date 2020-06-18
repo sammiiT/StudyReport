@@ -114,7 +114,7 @@ __asm void PendSV_Handler(void)
                             /* stack r0-r3, r12, lr, pc, xpsr when SystemTick handler(Tail Chain interrupt) */
     MRS R0, PSP             /* 取得當下的stack pointer值; r0-r3, r12, lr, pc, xpsr已經保存 */
 
-    STMDB R0!,{R4-R11}      /* 保存剩下的r4-r11到_psp[]l push */
+    STMDB R0!,{R4-R11}      /* 保存剩下的r4-r11到_psp[]l push, callee save register */
     LDR R1,=__cpp(&cur)//
     LDR R2,[R1]             /* 得到task id */
     LDR R3,=__cpp(&_psp)
