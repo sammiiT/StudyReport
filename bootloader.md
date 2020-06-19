@@ -40,7 +40,9 @@ void execute_user_app(void)
 * cortex-m0 cpu不支援VTOR, 所以必須用memory remap功能。  
 * 將user app vector table先拷貝一分到SRAM 的起始位址區域。   
 * 設定SYSCFG register(SYSCFG_CFGR1)的bit[0]=1和bit[1]=1,將SRAM映射到0x00000000, vector table會映射到0x0。  
-* 執行跳躍到user app程式:  
+
+## 執行跳躍到user app程式:  
+* (1)先執行jump 到app的程式, (2)再copy vector table 到SRAM, (3)最後再將SRAM的內容mapping到0x00000000的位址
 ```c  
 #define APPLICATION_ADDRESS     (uint32_t)0x08004000  //UerAPP的位址
 int main(void){ //BootLoader 主體
@@ -63,7 +65,7 @@ void iap_load_app(void){	//轉跳程式
 		__set_MSP(*(__IO uint32_t*) APPLICATION_ADDRESS);//設定stack pointer,此帶入值為stack top
 		JumpToApplication(); //呼叫UserAPP的ResetHandler()
 	}
-//跳到ResetHandler, 此handler最後會執行到main,首先須將vector table重新填入SRAM,再從SRAM作一次mapping到0x00000000		
+/* 跳到ResetHandler, 此handler最後會執行到main,首先須將vector table重新填入SRAM,再從SRAM作一次mapping到0x00000000; 其sample code如下 */		
 }
 ```
 * 執行vector table remap,先拷貝vector table再從SRAM重映射到0x00000000程式:
