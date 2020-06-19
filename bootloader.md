@@ -28,6 +28,11 @@ void execute_user_app(void)
   SCB->VTOR = APPLICATION_ADDRESS;  //將user app的位址指派給vector table offset register  
   boot_jump(USER_APP_ADDRESS);      //重新設定stack pointer和program counter
 }
+/*
+(1)設定VTOR
+(2)設定SP
+(3)做jump的動作, LDR PC,[R0,#4]
+*/
 ```
 ## Bootloader Remap  
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/bootloader_remap.png)  
