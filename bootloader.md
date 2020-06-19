@@ -25,9 +25,9 @@ __asm void boot_jump(uint32_t address){
 }
 void execute_user_app(void) 
 {
-	/* disable interrupt */
+  /* disable interrupt */
   
-	SCB->VTOR = APPLICATION_ADDRESS;  //將user app的位址指派給vector table offset register  
+  SCB->VTOR = APPLICATION_ADDRESS;  //將user app的位址指派給vector table offset register  
   boot_jump(USER_APP_ADDRESS);      //重新設定stack pointer和program counter
 }
 /*
