@@ -59,7 +59,7 @@ subs  r0, r0, #0x20   ; stack pointer 位移 0x20 bytes (r4-r11), 操作r0 regis
 ## Step 3: Interrupt Enable/Disable  
 * 進入critical section:  
 ```c  
-#define  OS_ENTER_CRITICAL()  {cpu_sr = OS_CPU_SR_Save();}
+#define  OS_ENTER_CRITICAL()  {cpu_sr = OS_CPU_SR_Save();} /* r0是caller saved所以進入之前必須存入stack */
 OS_CPU_SR_Save            ;儲存RRIMASK到R0(返回值), 並關閉中斷
     MRS     R0, PRIMASK   ;Set prio int mask to mask all (except faults)
     CPSID   I             ;設定interrupt disable                    
@@ -67,8 +67,8 @@ OS_CPU_SR_Save            ;儲存RRIMASK到R0(返回值), 並關閉中斷
 ```
 * 離開critical section:  
 ```c  
-#define  OS_EXIT_CRITICAL()   {OS_CPU_SR_Restore(cpu_sr);}
-OS_CPU_SR_Restore         ; 
+#define  OS_EXIT_CRITICAL()   {OS_CPU_SR_Restore(cpu_sr);} /* r0是caller saved所以進入之前必須存入Stack */
+OS_CPU_SR_Restore         ;經過context switch之後, stack已經pop回register,所以之前存的r0狀態會pop回register.
     MSR     PRIMASK, R0   ;設定interrupt enable 之前的OS_CPU_SR_SAVE, PRIMASK是暫存器,設定Interrupt的Enable/Disable
     BX      LR
 ```
