@@ -24,7 +24,7 @@ subs  r0, r0, #0x20   ; stack pointer 位移 0x20 bytes (r4-r11), 操作r0 regis
   * Task和Task之間的轉換時,register內容儲存。  
   * 上述機制的相關檔案是OS_CPU_A.asm  
 * Kernel 運作時對應的API新增功能:  
-  * 函式有Hook名稱, 可新增內容提供額外的客製化功能。  
+  * 函式有Hook名稱, 可新增內容提供額外的客製化功能,或加入測試code。  
   * 在OS_CPU_C.c中可以查詢到相關的API。
 
 ## Step 2: Task stack initialization
@@ -175,7 +175,7 @@ void OSTaskIdleHook(void){//在hook函式中加上test code
 * Task對Task的context switch: OSCtxSW(), 會在OSSched()中被呼叫  
 	* 測試方法:  
 		*	stack initialization 必須先正常運作.  
-		*	創建一個新的task, 讓它context switch到Idle Task  
+		*	需創建一個新的task, 讓它context switch到Idle Task  
 		*	OSTimeDly(1)會呼叫OSSched(),進而觸發context switch  
 	*	測試程式:  
 	```c    
@@ -187,14 +187,14 @@ void OSTaskIdleHook(void){//在hook函式中加上test code
 	void TestTask(void* pdata){
         pdata = pdata;
         while(1){
-        		OSTimeDly(1);	//時間到時會發生context switch
+        		OSTimeDly(1);	//時間到時會發生context switch,OSTimeDly(1)裡面會呼叫到OSCtxSW();或直接呼叫OSCtxSW()也可以
         }//因為沒有實做OSTickISR和開啟timer,所以OSTimeDly會執行context switch到Idle Task
 	}
 	```  
 	
 *	ISR對Task的context switch: OSIntCtxSw(),在OSIntExit()中被呼叫  
 	*	interrupt後產生的context switch, 搭配OSTickISR()來測試  
-	*	OSTickISR(); 在ARM架構中是OS_CPU_SysTickHandler(), 最後會呼叫到OSIntExit(), 進而呼叫到OSIntCtxSw()  
+	*	OSTickISR(); 在ARM架構中是OS_CPU_SysTickHandler(), 最後會呼叫到OSIntExit(), 進而呼叫到OSIntCtxSw(); ~任何ISR內都須加上OSIntExit,這樣才會在OSIntExit時有context switch~。  
 	*	測試方法: 利用LED  
 		*	在OSTickISR裡面不要呼叫OSIntExit(),並將blinking程式放到其中  
 		*	如果LED會blinking,則問題發生點就會在OSIntCtxSw()  
