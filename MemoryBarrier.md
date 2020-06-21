@@ -60,7 +60,7 @@ Some cortexM MCU have memory remapping feature to enable the processor to boot u
     ```as  
     ldr r0, #0        ; r0寫入 0x00
     msr CONTROL, r0   ; 切換operation mode
-    dsb               ; dsb確保, CONTROL register正確寫入數值, operation mode切換完成
+    dsb               ; dsb確保, CONTROL register正確寫入數值, operation mode切換完成; 也可以換成isb
     ;...              ; 模式切換之後的動作
     ```
     * 若沒有dsb(data synchronize barrier), 則有可能發生模式尚未完全切換就執行接下來的動作(變成是privileged); 原本是要在user mode執行,卻變成在privileged mode執行。
