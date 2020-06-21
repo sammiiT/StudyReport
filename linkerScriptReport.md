@@ -267,7 +267,7 @@ SECTIONS{
 			/* End Of .text section */
 			_etext = .; 			//_etext和_sifastcode是一樣的位址??
 			_sifastcode = .; //start of fastcode section in LMA
-		}	> IROM  
+		}> IROM  
  		```  
 		*	**.fastcode section**: 此區域的擺放的程式碼是要在RAM直型, 因為比在ROM執行快, 所以稱為.fastcode  
 		```c  
