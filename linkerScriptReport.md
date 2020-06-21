@@ -340,7 +340,8 @@ SECTIONS{
         }
         for(pulDest = &_sbss; pulDest < &_ebss; ){//初始化 .bss section 
             *(pulDest++) = 0;
-        }
+        }  
+        /* 這邊可以再加入 vector table remap的程式; cortex m0 cpu.................. */
         main(); // main函式進入點
 	}
 	```
