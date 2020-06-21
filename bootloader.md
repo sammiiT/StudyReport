@@ -80,7 +80,7 @@ void iap_load_app(void){	//轉跳程式
 	__IO uint32_t VectorTable[48] __attribute__((section(".RAMVectorTable")));
 #endif
 
-int main(void){
+int main(void){ /* 這一段remap的動作可以放到 reset_handler scatter loading動作內, 參考linkerscript 讀書心得報告 */
 	uint32_t i=0;
 	//設定system clock...省略不描述
 	
