@@ -171,7 +171,7 @@ SECTIONS{
 			foo1.o(.input1)         # foo1.o檔案中的.input1區段  
 		}	 
 		outputc:{
-			*(.intput) #所有檔案中的.input1區段, 被放到outputc
+			*(.input1) #所有檔案中的.input1區段, 被放到outputc
 			*(.input2) #所有被歸類為.input2 section的區塊(section)檔案, 被放到outputc  
 		}
 	}
