@@ -39,6 +39,6 @@ SECTION{
     }  
 }  
 ```
-* 參考linkerScript-Record.md
+* [參考linkerScript-Record.md](https://github.com/sammiiT/StudyReport/blob/master/linkerScriptReport.md)
 ## Scatter loading Example
-* 參考linkerScript-Record.md
+* [參考linkerScript-Record.md](https://github.com/sammiiT/StudyReport/blob/master/linkerScriptReport.md)
