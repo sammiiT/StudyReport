@@ -1,6 +1,6 @@
 # Linker Script 紀錄
 * Linker的作用就是把輸入的object檔的各個區段,整合並輸出到特定的區段(section)
-* 透過範例(On Job Training)來了解Linker Script的撰寫  
+* 透過範例來了解Linker Script的撰寫  
 
 ## Object File
 * .obj檔案, 經編譯器編譯後的檔案
