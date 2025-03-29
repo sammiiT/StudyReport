@@ -202,11 +202,11 @@ SECTIONS{
 *	從linker script中宣告symbol(變數):  
 	*	linker script symbol並不等同於C語言中的變數宣告, 他是一個沒有數值的symbol(只代表一個位址)。  
 	*	在linker script中宣告symbol, 僅會在symbol table中產生一個entry,此entry僅紀錄位址(symbol僅代表一個位址而已),但不會分配任何記憶體空間給此symbol; **(linker script中的symbol是會被編譯到rom code中, 代表程式編排的資訊??)**。  
-	*	如以下在linker script中的描述會產生一個叫做"foo"的symbol table, 此symbol table紀錄的值為1000, 但不會在1000這個位址上初始化任何值; 這表示使用者無法存取linker script中所宣告的symbol的位址, 僅能讀取symbol所代表的位址。  
+	*	如以下在linker script中的描述會產生一個叫做"foo"的symbol table, 此symbol table紀錄的值為1000, 但不會在1000位址上初始化任何值; 這表示使用者無法存取linker script中所宣告的symbol的位址, 僅能讀取symbol所代表的位址。  
 	```c  
 	foo = 1000;  
 	```  
-	*	linker script中宣告變數例子:  
+	*	linker script中宣告變數例子; 其中start_of_ROM, end_of_ROM和 start_of_FLASH會被記錄在symbol table中  
 	```c  
 	start_of_ROM = .ROM;  
 	end_of_ROM = .ROM + sizeof(.ROM);  
