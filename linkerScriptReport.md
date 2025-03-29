@@ -182,7 +182,19 @@ SECTIONS{
 	*	圖(b)的排列,可以用下列描述的linker script來做表示: 僅討論.sec1和.sec2為input section  
 		*	*(.sec1 .sec2) 以檔案為主, 把所有檔案中的.sec1和.sec2區塊作輸入  
 	* 圖(c)的排列,可以用下列描述的linker script來做表示: 僅討論.sec1和.sec2為input section  
-		*	*(.sec1) *(.sec2) 以section為主, 把所有檔案的.sec1集中擺放到一個區塊, 再把所有檔案的.sec2集中放到一個區塊  
+		*	*(.sec1) *(.sec2) 以section為主, 把所有檔案的.sec1集中擺放到一個區塊, 再把所有檔案的.sec2集中放到一個區塊
+  *	每一個object file(如foo.o, foo1.o),在程式撰寫時,可定義其個別區段;如 foo.o的input1區段和input2區段; 如:
+  ```as
+  .section .input1   #foo的input1 區段 
+	_symbol_in_input1:
+	mov $1, %eax
+
+	.section .input2   #foo的input2 區段   
+	_symbol_in_intput2:
+	.long 0x90909090
+  ```  
+
+
 
 ## Example_5: Source Code Refernce    
 *	C模組中宣告變數, 編譯器對此變數的處理:  
