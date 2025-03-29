@@ -137,7 +137,7 @@ SECTIONS{
 -rwxr-xr-x 1 root root 9 11-04 20:55 ./a.out
 
 
-## **Example_3**: 比較下列量者差異  
+## **Example_3**: 比較下列兩者差異  
 *	**.text :{*(.text)}**  
 將.text區塊 設定成locale counter, 且位址會經linker做alignment的動作,變成 4byte alignment; 如:
 ```c
