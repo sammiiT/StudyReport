@@ -17,7 +17,8 @@
 * .是location counter, 用來表示symbol的位址值  
 
 ## Orphan Section  
-*	**沒有被指定在linker script, 但又在檔案中存在的section稱為orphan section**: Orphan sections are sections present in the input files which are not explicitly placed into the output file by the linker script. The linker will still copy these sections into the output file by either finding, or creating a suitable output section in which to place the orphaned input section.  
+*	**沒有被指定在linker script, 但又在檔案中存在的section稱為orphan section**: Orphan sections are sections present in the input files which are not explicitly placed into the output file by the linker script. The linker will still copy these sections into the output file by either finding, or creating a suitable output section in which to place the orphaned input section.
+*	input_file => linker script => output_file (elf/axf)  沒有被指定的section的input_file會被linker指派為orphan section
 *	**Orphan section放置的位可以用 .=. 來表示**: The one way to influence the orphan section placement is to assign the location counter to itself, as the linker assumes that an assignment to . is setting the start address of a following output section and thus should be grouped with that section.  
 ```c  
 SECTIONS{
