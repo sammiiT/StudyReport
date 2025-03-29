@@ -128,7 +128,7 @@ SECTIONS{
        }  
 }
 ```
-* 編譯, 鏈結, 查詢其內容:  
+* 編譯, 鏈結, 查詢其內容:   
 [root@localhost]# hexdump ./a.out  
 0000000 01b8 0000 9000 9090 0090  
 0000009  
@@ -164,7 +164,7 @@ SECTIONS{
 *	利用linker script來規劃各個section擺放的區域。以上圖(a),(b),(c)來做解說:  
 	*	圖(a)的排列, 可用以下描述的linker script來做表示:  
 	```c  
-	SECTIONS{  
+	SECTIONS{ # output輸出共3個section, 分別為outputa(從0x10000開始), outputb(接續outpua) 和 outputc(接續outputb)
 		outputa 0x10000:{         # outputa區塊,位於0x10000  
 			all.o                   # all.o的所有區塊放到outputa(.text,.data,...)  
 			foo.o(.input1)          # foo.o檔案中的 .input1 區段  
