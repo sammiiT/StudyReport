@@ -155,7 +155,9 @@ SECTIONS{
         *(.text)
 }
 ```
-上述.text的 section會放到0x103, linker不會將其作alignment的動作
+上述.text的 section會放到0x103, linker不會將其作alignment的動作  
+![](https://github.com/sammiiT/StudyReport/blob/master/picture/local_counter_%26_alignment.png)  
+
 
 ##	**Example_4**: output section順序 
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/LinkerOrganize.png)  
