@@ -10,7 +10,8 @@
 * stack pointer往下遞增
 * 初始stack位址,和vector table必須從0x00000000開始存放, 因此IAP之後的APP必須 (1)Remap vector到0x00000000 或使用 (2)VTOR(Vector Table Offset Register)。
 
-Note: thumb模式下,PC代的數值的bit[0]設為1
+Note: thumb模式下,PC代的數值的bit[0]設為1  (上圖0x00000004位址,值0x00000101; program_counter指向0x00000100)  
+      
 
 ## Bootloader VTOR 
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/bootloader-VTOR.png)  
