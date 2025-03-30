@@ -49,7 +49,7 @@ void execute_user_app(void)
 * 設定SYSCFG register(SYSCFG_CFGR1)的bit[0]=1和bit[1]=1,將SRAM映射到0x00000000, vector table會映射到0x0。  
 
 ## 執行跳躍到user app程式:  
-* (1)先執行jump 到app的程式, (2)再copy vector table 到SRAM, (3)最後再將SRAM的內容mapping到0x00000000的位址
+* step1.先執行jump 到app的程式; step2.再copy vector table 到SRAM; step3.最後再將SRAM的內容mapping到0x00000000的位址
 ```c  
 #define APPLICATION_ADDRESS     (uint32_t)0x08004000  //UerAPP的位址
 int main(void){ //BootLoader 主體
