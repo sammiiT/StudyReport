@@ -24,15 +24,16 @@ Note:
 ```c
 #define USER_APP_ADDRESS 0x20000000
 __asm void boot_jump(uint32_t address){
-  LDR SP, [R0]      //load new stack pointer address; vector table 的第一個記憶體位址(stack bottom)
-  LDR PC, [R0,#4]   //load new program counter address; vector table中的第二個記憶體位址(Reset_Handler)
+  LDR SP, [R0]      //load new stack pointer address; vector table 的第一個記憶體位址(stack bottom)  ...(2)
+  LDR PC, [R0,#4]   //load new program counter address; vector table中的第二個記憶體位址(Reset_Handler) ...(3)
 }
 void execute_user_app(void) 
 {
   /* disable interrupt */
   
-  SCB->VTOR = APPLICATION_ADDRESS;  //此位址是user_app的vector_table的位址,指派給vector table offset register  
-  boot_jump(USER_APP_ADDRESS);      //重新設定stack pointer和program counter
+  SCB->VTOR = USER_APP_ADDRESS ;  //USER_APP_ADDRESS的開頭,就是sp存放位址; ...(1)
+                                  //USER_APP_ADDRESS+0x04,是user app的vector table offset register  
+  boot_jump(USER_APP_ADDRESS);    //重新設定stack pointer和program counter
 }
 /*
 (1)設定VTOR
