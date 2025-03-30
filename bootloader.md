@@ -49,7 +49,7 @@ void execute_user_app(void)
 * 設定SYSCFG register(SYSCFG_CFGR1)的bit[0]=1和bit[1]=1,將SRAM映射到0x00000000, vector table會映射到0x0。  
 
 ## 執行跳躍到user app程式:  
-* step1.先執行jump 到app的程式; step2.再copy vector table 到SRAM; step3.最後再將SRAM的內容mapping到0x00000000的位址
+* step1.先執行jump 到app的程式。 step2.再copy vector table 到SRAM。 step3.最後再將SRAM的內容mapping到0x00000000的位址。
 ```c  
 #define APPLICATION_ADDRESS     (uint32_t)0x08004000  //UerAPP的位址
 int main(void){ //BootLoader 主體
@@ -69,8 +69,10 @@ void iap_load_app(void){	//轉跳程式
 	if (((*(__IO uint32_t*)APPLICATION_ADDRESS) & 0x2FFE0000 )==0x20000000){
 		JumpAddress =*(__IO uint32_t*)(APPLICATION_ADDRESS+4);//initial stack top的下一個就是reset handler的位址。
 		JumpToApplication = (pFunction)JumpAddress;
-		__set_MSP(*(__IO uint32_t*) APPLICATION_ADDRESS);//設定stack pointer,此帶入值為stack top
-		JumpToApplication(); //呼叫UserAPP的ResetHandler()
+		__set_MSP(*(__IO uint32_t*) APPLICATION_ADDRESS);//設定main stack pointer,此帶入值為stack top
+
+                //step1.執行jump 到app的程式。
+                JumpToApplication(); //呼叫UserAPP的ResetHandler()
 	}
 /* 跳到ResetHandler, 此handler最後會執行到main,首先須將vector table重新填入SRAM,再從SRAM作一次mapping到0x00000000; 其sample code如下 */		
 }
@@ -88,7 +90,8 @@ void iap_load_app(void){	//轉跳程式
 int main(void){ /* 這一段remap的動作可以放到 reset_handler scatter loading動作內, 參考linkerscript 讀書心得報告 */
 	uint32_t i=0;
 	//設定system clock...省略不描述
-	
+
+        //step2.再copy vector table 到SRAM。
 	//拷貝UserAPP的vector table到SRAM //上圖的(1)
 	for(i=0; i<48; ++i){
 		/* 前面48個word拷貝至0x2000000(SRAM的開頭位址),此48個word就是initial stack pointer和vector table */
@@ -96,7 +99,8 @@ int main(void){ /* 這一段remap的動作可以放到 reset_handler scatter loa
 		VectorTable[i] = *(__IO uint32_t*)(APPLICATION_ADDRESS+(i<<2)); 
 	}  
 	//設定peripheral clock....省略不描述
-	
+
+        //step3.最後再將SRAM的內容mapping到0x00000000的位址。
 	//remap動作,從0x20000000重映射到0x00000000 //上圖的(2)
 	WRITE_REG(SYSCFG->MEMRMP,
 	(READ_REG(SYSCFG->MEMRMP)&~(SYSCFG_MEMRMP_MEM_MODE))|(SYSCFG_MEMRMP_MEM_MODE_1|SYSCFG_MEMRMP_MEM_MODE_0));	
