@@ -19,8 +19,8 @@ Note:
 ## Bootloader VTOR 
 ![](https://github.com/sammiiT/Study-Report/blob/master/picture/bootloader-VTOR.png)  
 -----  
-* bootloader將下載的user app搬移至藍色區塊; 需有flash controller用於燒錄user app用。  
-* 執行跳躍到user app的位址, 並執行; sample code如下:
+* bootloader將下載的user app搬移至藍色區塊; ~~需有flash controller用於燒錄user app用。~~  
+* 執行跳躍到user app的位址, 須執行sample code如下:
 ```c
 #define USER_APP_ADDRESS 0x20000000
 __asm void boot_jump(uint32_t address){
@@ -31,7 +31,7 @@ void execute_user_app(void)
 {
   /* disable interrupt */
   
-  SCB->VTOR = APPLICATION_ADDRESS;  //將user app的位址指派給vector table offset register  
+  SCB->VTOR = APPLICATION_ADDRESS;  //此位址是user_app的vector_table的位址,指派給vector table offset register  
   boot_jump(USER_APP_ADDRESS);      //重新設定stack pointer和program counter
 }
 /*
