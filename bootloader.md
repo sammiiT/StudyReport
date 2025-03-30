@@ -10,7 +10,10 @@
 * stack pointer往下遞增
 * 初始stack位址,和vector table必須從0x00000000開始存放, 因此IAP之後的APP必須 (1)Remap vector到0x00000000 或使用 (2)VTOR(Vector Table Offset Register)。
 
-Note: thumb模式下,PC代的數值的bit[0]設為1  (上圖0x00000004位址,值0x00000101; program_counter指向0x00000100)  
+Note:  
+* thumb模式下,PC代的數值的bit[0]設為1  (上圖0x00000004位址,值0x00000101; program_counter指向0x00000100)  
+* 前256 bytes是一開始.asm(.s)檔案所描述的區塊, 就是圖中的0x00000000, 0x00000004 , Other_exception_vectors區塊   
+* Boot Code就是ResetHandler所對應的內容 (default狀況下); 位址0x00000004的內容, 就是ResetHandler的位址; ResetHandler在default狀況,會呼叫main函式  
       
 
 ## Bootloader VTOR 
