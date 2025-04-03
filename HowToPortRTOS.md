@@ -228,7 +228,7 @@ void OSTaskIdleHook(void){//在hook函式中加上test code
 		}  
 	}
 	```  
-## stack initial, context switch, systick, ISR context switch 測試正常, 則porting完成
+* 若stack initial, context switch, systick, ISR context switch 測試正常, 則porting完成
 	
 	
 
